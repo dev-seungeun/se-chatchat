@@ -46,7 +46,7 @@ function Room() {
     if(roomName == undefined || roomName == "undefined") {
       alert("방을 다시 선택해주세요");
     }else {
-      console.log("SelectRoom -> "+roomName)
+      console.log("["+roomName+"] 입장")
       navigate(`/chat?room=${roomName}`);
     }
   };

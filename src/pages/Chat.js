@@ -54,7 +54,6 @@ function Chat() {
 // USE EFFECT  ---------------------------------------
   useEffect(() => {
     try {
-      console.log("useEffect > getAddedChats()");
       getAddedChats(roomName, setChatList);
     } catch (error) {
       console.log(error);
