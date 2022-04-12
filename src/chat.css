@@ -22,6 +22,8 @@
 .format { display: none; }
 
 .logout {
+	position: fixed;
+	top:10px;
 	text-decoration:none;
 	line-height:22px;
 	border-radius:5px;
@@ -43,7 +45,6 @@
 	top:3px
 }
 
-.logout:hover {
-  background-color: gray;
+.logout:hover, .back:hover {
   cursor: pointer;
 }

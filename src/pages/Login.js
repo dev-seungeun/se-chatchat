@@ -74,9 +74,7 @@ function Login() {
         </form>
         <br/>
         <hr/>
-        <p>
-          <div className="signup-text">회원이 아니신가요? <Link to="/signup">회원가입</Link></div>
-        </p>
+        <div className="signup-text">회원이 아니신가요? <Link to="/signup">회원가입</Link></div>
       </div>
     </div>
   );

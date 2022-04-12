@@ -1,6 +1,6 @@
 *{ margin: 0; padding: 0; }
 
-.room-wrap { margin: 20px 10px; }
+.room-wrap { margin: 20px 10px; max-width: 300px;}
 .room {
 	text-decoration:none;
 	text-align:center;
@@ -10,8 +10,9 @@
   font-weight: bold;
 	border: 1px gray solid;
 	background-color: /*#EAEAEA*/ white;
+	color: black;
 	border-radius:3px;
-	width:300px;
+	width:280px;
 	height:35px;
 	line-height:35px;
   margin: 0 0 5px 10px;
@@ -26,35 +27,31 @@
   cursor: pointer;
 }
 
-
-.login-wrap { width: 320px; }
-.login-wrap .title { font-size: 20pt; text-align: center; width: 300px; padding: 3px; margin: 10px 0 10px 10px; }
-.login-wrap .email { border-radius:3px; width: 300px; height:35px; padding: 3px; margin: 0 0 5px 10px; border: 1px lightgray solid; }
-.login-wrap .password { border-radius:3px; width: 300px; height:36px; padding: 3px; margin: 0 0 15px 10px; border: 1px lightgray solid; }
-
-.signup-text { font-size: 10pt; margin: 10px 0 15px 10px; }
-
-.login {
+.logout-room {
 	text-decoration:none;
+	line-height:22px;
+	border-radius:5px;
 	text-align:center;
 	vertical-align:middle;
 	display:inline-block;
-	font-size:12px;
-	border: 1px #3A3A3A solid;
-	background-color: #3A3A3A;
+	font-size:10px;
+  font-weight: bold;
 	color: white;
-	border-radius:3px;
-	width:300px;
-	height:35px;
-	line-height:35px;
-  margin: 0 0 5px 10px;
+	background-color: black;
+	width:60px;
+	height:25px;
+	border-color:#000000;
+	border-width:2px;
+	border-style:solid;
+	margin: 0 10px 15px 0;
+	float:right;
 }
 
-.login:active {
+.logout-room:active {
 	position:relative;
 	top:3px
 }
 
-.login:hover {
+.logout-room:hover {
   cursor: pointer;
 }

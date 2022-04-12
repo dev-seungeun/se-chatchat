@@ -1,13 +1,12 @@
-import React, { useReducer, useEffect  } from 'react';
-import { BrowserRouter as Router, Routes, Route  } from 'react-router-dom';
+import React, { useReducer, useEffect, useRef  } from 'react';
+import { HashRouter, Routes, Route  } from 'react-router-dom';
 import { authService } from "./services/firebase";
-// import "./styles.css";
 import Chat from "./pages/Chat";
 import Room from "./pages/Room";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import PublicRoute from "./components/PublicRoute";
-import PrivateRoute from "./components/PrivateRoute";
+import PrivateRoute from "./components/PrivateRoute"; 
 
 const initialState = {
   authenticated: false,
@@ -44,7 +43,7 @@ function App() {
   }, []);
 
   return (
-    <Router>
+    <HashRouter>
       <Routes>
 
         <Route
@@ -73,23 +72,7 @@ function App() {
         />
 
       </Routes>
-    </Router>
-    // <div className="App">
-    //   <header className="App-header">
-    //     <img src={logo} className="App-logo" alt="logo" />
-    //     <p>
-    //       Edit <code>src/App.js</code> and save to reload.
-    //     </p>
-    //     <a
-    //       className="App-link"
-    //       href="https://reactjs.org"
-    //       target="_blank"
-    //       rel="noopener noreferrer"
-    //     >
-    //       Learn React
-    //     </a>
-    //   </header>
-    // </div>
+    </HashRouter>
   );
 }
 

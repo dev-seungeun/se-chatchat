@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { logout } from "../helpers/auth";
 import { authService, database, database_ref } from "../services/firebase";
-import { sendChat, getChats, chatOnValue, chatOnChildAdded, chatOnChildChanged, chatOnChildRemoved } from "../helpers/database";
+import { sendChat, getChats, getAddedChats } from "../helpers/database";
+import useNotification from "../helpers/useNotification";
 import "../chat.css";
 
 function useQuery() {
@@ -12,32 +13,12 @@ function useQuery() {
 
 function Chat() {
 
+  let startAdd = false;
   const [msg, setMsg] = useState("");
   const [chats, setChats] = useState("");
 
-  let query = useQuery();
-  const roomName = query.get("room")
+  const setChatList = (chatList, isInitEnd) => {
 
-  const scrollRef = useRef();
-  const scrollToBottom = () => {
-    scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
-  }
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [chats]);
-
-  let itemId = 1;
-  const createItem = (text) => {
-    return (itemId++) + text;
-  }
-
-  const toDate = (timestamp) => {
-    let date = new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(timestamp);
-    return date;
-  }
-  const getChatList = () => {
-    const chatList = getChats(roomName);
     const myList = () => {
       const list = chatList.map((chat, index) => (
         <li key={createItem(index+"li")} className={chat.uid === authService.currentUser.uid ? "right" : "left"}>
@@ -52,14 +33,54 @@ function Chat() {
       ));
       return <ul>{list}</ul>;
     };
+
     setChats(myList);
+    if(startAdd) notify(chatList);
+    if(isInitEnd) startAdd = true;
+
+  };
+
+  const notify = (chatList) => {
+    if(chatList.length > 0) {
+      const chat = chatList[chatList.length-1];
+      if(chat.uid !== authService.currentUser.uid) {
+        useNotification(chat.email, {
+          body: `${chat.message}`
+        });
+      }
+    }
+  }
+
+// USE EFFECT  ---------------------------------------
+  useEffect(() => {
+    try {
+      console.log("useEffect > getAddedChats()");
+      getAddedChats(roomName, setChatList);
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [chats]);
+
+
+// HANDLE  -------------------------------------------
+  const handleGoogleLogOut = async () => {
+    try {
+      await logout();
+    } catch (error) {
+     console.log(error);
+    }
   };
 
   const handleOnChange = (e) => {
-  	setMsg(e.target.value);
+    setMsg(e.target.value);
   };
 
-  const onKeyPress = async(e) => {
+
+  const handleKeyPress = async(e) => {
     if(e.key == 'Enter') {
       if(!e.shiftKey) {
         if(msg.trim() !== "") {
@@ -82,27 +103,30 @@ function Chat() {
       }
     }
   }
-  const handleGoogleLogOut = async () => {
-    try {
-      await logout();
-    } catch (error) {
-     console.log(error);
-    }
-  };
 
-  useEffect(() => {
-    try {
-      //chatOnChildChanged
-      const commentsRef = database_ref(database, 'chats/'+roomName);
-      chatOnChildAdded(commentsRef, (data) => {
-        getChatList();
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  }, []);
+
+// ETC ----------------------------------------------
+  let query = useQuery();
+  const roomName = query.get("room")
+
+  const scrollRef = useRef();
+  const scrollToBottom = () => {
+    scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
+  }
+
+  let itemId = 1;
+  const createItem = (text) => {
+    return (itemId++) + text;
+  }
+
+  const toDate = (timestamp) => {
+    let date = new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(timestamp);
+    return date;
+  }
+// --------------------------------------------------
 
   return (
+
     <div className="chat_wrap" ref={scrollRef}>
       <div className="header">
         <div className="title">SE-SH</div>
@@ -116,7 +140,7 @@ function Chat() {
       <div className="chat">
         {chats}
       </div>
-      <div className="input-div" onKeyPress={onKeyPress}>
+      <div className="input-div" onKeyPress={handleKeyPress}>
         <textarea
           className="input-msg"
           value={msg}
