@@ -1,6 +1,6 @@
 *{ margin: 0; padding: 0; }
 
-.room-wrap { margin: 20px 10px; max-width: 300px;}
+.room-wrap { margin: 20px 10px; text-align: center; }
 .room {
 	text-decoration:none;
 	text-align:center;
@@ -12,10 +12,10 @@
 	background-color: /*#EAEAEA*/ white;
 	color: black;
 	border-radius:3px;
-	width:280px;
+	width:80%;
 	height:35px;
 	line-height:35px;
-  margin: 0 0 5px 10px;
+  margin-top: 5px;
 }
 
 .room:active {

@@ -76,6 +76,7 @@ function Room() {
         onClick={handleGoogleLogOut}>
         LOGOUT
       </button>
+      <br/><br/>
       <div>
         {rooms}
       </div>
