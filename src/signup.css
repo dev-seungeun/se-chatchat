@@ -1,9 +1,9 @@
 *{ margin: 0; padding: 0; }
 
-.signup-wrap { width: 320px; }
-.signup-wrap .title { font-size: 20pt; text-align: center; width: 300px; padding: 3px; margin: 10px 0 31px 10px; }
-.signup-wrap .email { border-radius:3px; width: 300px; height:35px; padding: 3px; margin: 0 0 5px 10px; border: 1px lightgray solid; }
-.signup-wrap .password { border-radius:3px; width: 300px; height:36px; padding: 3px; margin: 0 0 15px 10px; border: 1px lightgray solid; }
+.signup-wrap { width: 100%; text-align: center; }
+.signup-wrap .title { font-size: 20pt; text-align: center; width: 100%; padding: 3px; margin: 10px 0 31px 0; }
+.signup-wrap .email { border-radius:3px; width: 90%; height:35px; padding: 3px; margin: 0 0 5px 0; border: 1px lightgray solid; }
+.signup-wrap .password { border-radius:3px; width: 90%; height:36px; padding: 3px; margin: 0 0 15px 0;  border: 1px lightgray solid; }
 
 .login-text { font-size: 10pt; margin: 10px 0 15px 10px; }
 
@@ -17,10 +17,10 @@
 	background-color: #3A3A3A;
 	color: white;
 	border-radius:3px;
-	width:300px;
+	width:90%;
 	height:35px;
 	line-height:35px;
-  margin: 0 0 61px 10px;
+  margin: 0 0 40px 0;
 }
 
 .signup:active {

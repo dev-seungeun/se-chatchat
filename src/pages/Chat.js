@@ -51,6 +51,25 @@ function Chat() {
     }
   }
 
+  const sendMsg = async (e, msg) => {
+    if(msg.trim() !== "") {
+      try {
+        await sendChat(roomName,
+        {
+          uid: authService.currentUser.uid,
+          email: authService.currentUser.email,
+          // message: msg.replaceAll(/(\n|\r\n)/g, "<br>"),
+          message: msg,
+          timestamp: Date.now()
+        }).then(() => {
+          setMsg("");
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  }
+
 // USE EFFECT  ---------------------------------------
   useEffect(() => {
     try {
@@ -66,7 +85,11 @@ function Chat() {
 
 
 // HANDLE  -------------------------------------------
-  const handleGoogleLogOut = async () => {
+  const handleSendMsg = async (e) => {
+    sendMsg(e, msg);
+  };
+
+  const handleLogOut = async () => {
     try {
       await logout();
     } catch (error) {
@@ -82,23 +105,7 @@ function Chat() {
   const handleKeyPress = async(e) => {
     if(e.key == 'Enter') {
       if(!e.shiftKey) {
-        if(msg.trim() !== "") {
-          e.preventDefault();
-          try {
-            await sendChat(roomName,
-            {
-              uid: authService.currentUser.uid,
-              email: authService.currentUser.email,
-              // message: msg.replaceAll(/(\n|\r\n)/g, "<br>"),
-              message: msg,
-              timestamp: Date.now()
-            }).then(() => {
-              setMsg("");
-            });
-          } catch (error) {
-            console.log(error);
-          }
-        }
+        sendMsg(e, msg);
       }
     }
   }
@@ -132,7 +139,7 @@ function Chat() {
         <button
           className="logout"
           type="button"
-          onClick={handleGoogleLogOut}>
+          onClick={handleLogOut}>
           LOGOUT
         </button>
       </div>
@@ -146,6 +153,12 @@ function Chat() {
           placeholder="Message Here."
           onChange={handleOnChange}>
         </textarea>
+        <button
+          className="send"
+          type="button"
+          onClick={handleSendMsg}>
+          SEND
+        </button>
       </div>
     </div>
 

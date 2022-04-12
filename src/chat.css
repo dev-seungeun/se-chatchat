@@ -10,7 +10,7 @@
 .chat_wrap .chat ul li.right { text-align: right; }
 
 .chat_wrap .chat ul li > div { font-size: 10px;  }
-.chat_wrap .chat ul li > div.time { margin: 10px 10px 0 10px; font-size: 1pt; color: gray;}
+.chat_wrap .chat ul li > div.time { margin: 10px 10px 0 10px; font-size: 5px; color: gray;}
 .chat_wrap .chat ul li > div.sender { margin: 0 10px 0 10px; font-weight: bold; }
 .chat_wrap .chat ul li > div.message { display: inline-block; word-break:break-all; margin: 5px 10px 10px 10px; max-width: 75%; border: 1px solid #888; padding: 5px 10px; border-radius: 3px; background-color: #FCFCFC; color: #555; text-align: left; }
 
@@ -32,7 +32,34 @@
 	display:inline-block;
 	font-size:10px;
   font-weight: bold;
-	color:#000000;
+	background-color: white;
+	color: black;
+	border-color: black;
+	border-width: 2px;
+	border-style: solid;
+	width: 60px;
+	height: 25px;
+}
+
+/* .logout:active {
+	position:relative;
+	top:3px
+} */
+
+.send {
+	position: fixed;
+	bottom: 33px;
+	right: 10px;
+	text-decoration:none;
+	line-height:22px;
+	border-radius:5px;
+	text-align:center;
+	vertical-align:middle;
+	display:inline-block;
+	font-size:10px;
+  font-weight: bold;
+	background-color: black;
+	color:white;
 	width:60px;
 	height:25px;
 	border-color:#000000;
@@ -40,11 +67,19 @@
 	border-style:solid;
 }
 
-.logout:active {
-	position:relative;
-	top:3px
+.logout:hover, .back:hover, .send:hover {
+  cursor: pointer;
 }
 
-.logout:hover, .back:hover {
-  cursor: pointer;
+::-webkit-scrollbar {
+	width: 1px; /*스크롤바의 너비*/
+  height: 5px /* 가로 스크롤 수정 */
+}
+
+::-webkit-scrollbar-thumb {
+	background-color: rgb(199, 199, 199); /*스크롤바의 색상*/
+}
+
+::-webkit-scrollbar-track {
+	background-color: white; /*스크롤바 트랙 색상*/
 }

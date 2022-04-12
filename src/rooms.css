@@ -1,6 +1,6 @@
 *{ margin: 0; padding: 0; }
 
-.room-wrap { margin: 20px 10px; text-align: center; }
+.room-wrap { text-align: center; }
 .room {
 	text-decoration:none;
 	text-align:center;
@@ -12,7 +12,7 @@
 	background-color: /*#EAEAEA*/ white;
 	color: black;
 	border-radius:3px;
-	width:80%;
+	width:90%;
 	height:35px;
 	line-height:35px;
   margin-top: 5px;
@@ -43,14 +43,14 @@
 	border-color:#000000;
 	border-width:2px;
 	border-style:solid;
-	margin: 0 10px 15px 0;
+	margin: 10px 10px 0 0;
 	float:right;
 }
 
-.logout-room:active {
+/* .logout-room:active {
 	position:relative;
 	top:3px
-}
+} */
 
 .logout-room:hover {
   cursor: pointer;
