@@ -20,7 +20,12 @@ const useNotification = (title, option) => {
       }
     }
   }else {
-    new Notification(title, option);
+    var notification = new Notification(title, option);
+    notification.onclick = function(event) {
+      event.preventDefault();
+      window.focus();
+      // notificationRef.close(); 
+    }
   }
 
 };

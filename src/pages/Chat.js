@@ -35,8 +35,14 @@ function Chat() {
     };
 
     setChats(myList);
-    if(startAdd) notify(chatList);
+
+    const focused = document.hasFocus();
+    if(!focused && startAdd) {
+      notify(chatList);
+    }
     if(isInitEnd) startAdd = true;
+
+    setTimeout(()=>{ scrollToBottom() }, 200);
 
   };
 
@@ -44,9 +50,12 @@ function Chat() {
     if(chatList.length > 0) {
       const chat = chatList[chatList.length-1];
       if(chat.uid !== authService.currentUser.uid) {
-        useNotification(chat.email, {
-          body: `${chat.message}`
+        useNotification('SESH', {
+          body: ''
         });
+        // useNotification(chat.email, {
+        //   body: `${chat.message}`
+        // });
       }
     }
   }
@@ -63,6 +72,7 @@ function Chat() {
           timestamp: Date.now()
         }).then(() => {
           setMsg("");
+          scrollToBottom();
         });
       } catch (error) {
         console.log(error);
@@ -78,10 +88,6 @@ function Chat() {
       console.log(error);
     }
   }, []);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [chats]);
 
 
 // HANDLE  -------------------------------------------
@@ -117,7 +123,7 @@ function Chat() {
 
   const scrollRef = useRef();
   const scrollToBottom = () => {
-    scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' })
   }
 
   let itemId = 1;

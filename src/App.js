@@ -6,7 +6,7 @@ import Room from "./pages/Room";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import PublicRoute from "./components/PublicRoute";
-import PrivateRoute from "./components/PrivateRoute"; 
+import PrivateRoute from "./components/PrivateRoute";
 
 const initialState = {
   authenticated: false,
