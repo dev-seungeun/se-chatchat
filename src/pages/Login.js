@@ -21,8 +21,15 @@ function Login() {
     if (email !== "" && password !== "") {
       try {
         await signIn(email, password).then((res) => console.log(res));
-      } catch (error) {
-        console.log(error);
+      } catch (err) {
+        if(err.code.includes("wrong-password")) {
+          alert("비밀번호를 확인해주세요.");
+        }else if(err.code.includes("user-not-found")) {
+          alert("이메일을 확인해주세요.");
+        }else {
+          alert(err.code);
+        }
+
       }
     }
   };

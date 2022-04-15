@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getRooms } from "../helpers/database";
+import { getRooms, getRoomsAuth } from "../helpers/database";
+import { authService } from "../services/firebase";
 import { logout } from "../helpers/auth";
 import "../rooms.css"
 
@@ -12,7 +13,7 @@ function Room() {
   const getRoomList = async() => {
     getRooms(function(roomObject) {
       const myList = () => {
-        const list = Object.keys(roomObject).map((roomName, index) => (
+        const list = Object.values(roomObject).map((roomName, index) => (
           <li key={createItem(index+"li")}>
             <button
               key={createItem(index+"room")}
@@ -46,8 +47,14 @@ function Room() {
     if(roomName == undefined || roomName == "undefined") {
       alert("방을 다시 선택해주세요");
     }else {
-      console.log("["+roomName+"] 입장")
-      navigate(`/chat?room=${roomName}`);
+      getRoomsAuth(roomName, function(res) {
+        if(Object.keys(res).includes(authService.currentUser.uid)) {
+          console.log("["+roomName+"] 입장")
+          navigate(`/chat?room=${roomName}`);
+        }else {
+          alert("'"+roomName+"' 방 입장권한이 없습니다.")
+        }
+      })
     }
   };
 

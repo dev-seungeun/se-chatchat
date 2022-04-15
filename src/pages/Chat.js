@@ -18,22 +18,36 @@ function Chat() {
   const [chats, setChats] = useState("");
 
   const setChatList = (chatList, isInitEnd) => {
-
+    const themeData = getThemeData();
     const myList = () => {
-      const list = chatList.map((chat, index) => (
-        <li key={createItem(index+"li")} className={chat.uid === authService.currentUser.uid ? "right" : "left"}>
-          <div key={createItem(index+"time")} className = "time"><span>{toDate(chat.timestamp)}</span></div>
-          <div key={createItem(index+"sender")} className = "sender"><span>{chat.email}</span></div>
-          <div key={createItem(index+"message")} className = "message">
-            {chat.message.split('\n').map( line => {
-              return (<span key={createItem(index+"span")}>{line}<br/></span>)
-             })}
-          </div>
-        </li>
-      ));
-      return <ul>{list}</ul>;
-    };
-
+      if(themeData.theme == "light") {
+        const list = chatList.map((chat, index) => (
+          <li key={createItem(index+"li")} className={chat.uid === authService.currentUser.uid ? "right" : "left"}>
+            <div key={createItem(index+"time")} className = "time"><span>{toDate(chat.timestamp)}</span></div>
+            <div key={createItem(index+"sender")} className = "sender"><span>{chat.email}</span></div>
+            <div key={createItem(index+"message")} className = "message">
+              {chat.message.split('\n').map( line => {
+                return (<span key={createItem(index+"span")}>{line}<br/></span>)
+               })}
+            </div>
+          </li>
+        ));
+        return <ul>{list}</ul>;
+      }else {
+        const list = chatList.map((chat, index) => (
+          <li key={createItem(index+"li")} className={chat.uid === authService.currentUser.uid ? "right" : "left"}>
+            <div key={createItem(index+"sender")} className = "sender"><span>{"C:\\Users\\"+chat.email}</span></div>
+            <div key={createItem(index+"time")} className = "time"><span>{toDate(chat.timestamp)+" >"}</span></div>
+            <div key={createItem(index+"message")} className = "message">
+              {chat.message.split('\n').map( line => {
+                return (<span key={createItem(index+"span")}>{line}<br/></span>)
+               })}
+            </div>
+          </li>
+        ));
+        return <ul>{list}</ul>;
+      }
+    }
     setChats(myList);
 
     const focused = document.hasFocus();
@@ -44,6 +58,12 @@ function Chat() {
 
     setTimeout(()=>{ scrollToBottom() }, 200);
 
+  };
+
+  const getThemeData = () => {
+    const chatWrap = document.querySelector(".chat_wrap")
+    const theme = chatWrap.getAttribute("user-theme");
+    return {'chatWrap': chatWrap, 'theme': theme};
   };
 
   const notify = (chatList) => {
@@ -117,6 +137,22 @@ function Chat() {
   }
 
 
+  const handleModal = async(e) => {
+    const modeBtn = document.getElementById("modeBtn");
+    const themeData = getThemeData();
+    const chatWrap = themeData.chatWrap;
+    const theme = themeData.theme;
+    if(theme == "light") {
+      chatWrap.setAttribute("user-theme", "dark")
+      modeBtn.innerText = "LIGHT"
+    }else {
+      chatWrap.setAttribute("user-theme", "light")
+      modeBtn.innerText = "DARK"
+    }
+    getAddedChats(roomName, setChatList);
+  }
+
+
 // ETC ----------------------------------------------
   let query = useQuery();
   const roomName = query.get("room")
@@ -132,16 +168,25 @@ function Chat() {
   }
 
   const toDate = (timestamp) => {
-    let date = new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(timestamp);
+    //let date = new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(timestamp);
+    let date = new Intl.DateTimeFormat('ko-KR', {  hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(timestamp);
     return date;
   }
 // --------------------------------------------------
 
   return (
 
-    <div className="chat_wrap" ref={scrollRef}>
+    <div className="chat_wrap" ref={scrollRef} user-theme="light">
       <div className="header">
-        <div className="title">SE-SH</div>
+        <button
+          className="mode"
+          type="button"
+          id="modeBtn"
+          value=""
+          onClick={handleModal}>
+          DARK
+        </button>
+        <div className="title">SESH</div>
         <button
           className="logout"
           type="button"

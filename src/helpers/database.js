@@ -2,14 +2,23 @@ import { database, database_set, database_ref, database_on_value } from "../serv
 import { onChildAdded, onValue, query, orderByKey, orderByChild, limitToLast, startAt } from "firebase/database";
 
 export function getRooms(callback) {
-  const roomRef = database_ref(database, "chats");
+  const roomRef = database_ref(database, "chats/rooms");
   onValue(roomRef, (snapshot) => {
     callback(snapshot.val());
   });
 }
 
+export function getRoomsAuth(roomName, callback) {
+  const roomAuthRef = query(database_ref(database, 'chats/'+roomName+"/members"), limitToLast(10));
+  onValue(roomAuthRef, (snapshot) => {
+    callback(snapshot.val());
+  });
+}
+
 export function sendChat(roomName, data) {
-  return database_set(database_ref(database, 'chats/'+roomName+"/"+data.timestamp), {
+  const date = new Date();
+  const today = date.getFullYear()+""+("0" + (date.getMonth() + 1)).slice(-2)+""+("0" + date.getDate()).slice(-2);
+  return database_set(database_ref(database, 'chats/'+roomName+"/messages/"+today+"/"+data.timestamp), {
     message: data.message,
     timestamp: data.timestamp,
     email: data.email,
@@ -19,11 +28,13 @@ export function sendChat(roomName, data) {
 
 export function getAddedChats(roomName, callback) {
   const date = new Date();
-  const today = (new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0)).getTime();
+  const today = date.getFullYear()+""+("0" + (date.getMonth() + 1)).slice(-2)+""+("0" + date.getDate()).slice(-2);;
   let chatList = [];
-  const chatRef = query(database_ref(database, 'chats/'+roomName), orderByKey(), startAt(today.toString()), limitToLast(10));
+  const chatRef = query(database_ref(database, 'chats/'+roomName+"/messages/"+today), limitToLast(10));
   onChildAdded(chatRef, (snapshot) => {
-    chatList.push(snapshot.val());
+    if(snapshot.val().hasOwnProperty("uid")) {
+      chatList.push(snapshot.val());
+    }
     callback(chatList);
   });
   callback(chatList, true);
