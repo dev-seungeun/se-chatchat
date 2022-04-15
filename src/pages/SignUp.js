@@ -22,7 +22,7 @@ function SignUp() {
       try {
         await signUp(email, password);
       }catch(error) {
-        console.log(error);
+        alert(err.code);
       }
     }
   };
@@ -61,7 +61,7 @@ function SignUp() {
       </div>
       <br/>
       <hr/>
-      <div className="login-text">이미 회원이신가요? <Link to="/login">로그인</Link></div> 
+      <div className="login-text">이미 회원이신가요? <Link to="/login">로그인</Link></div>
     </div>
   );
 }
