@@ -22,7 +22,7 @@ function SignUp() {
       try {
         await signUp(email, password);
       }catch(error) {
-        alert(err.code);
+        alert(error.code);
       }
     }
   };
