@@ -76,7 +76,7 @@ html, body { overflow: hidden; }
 }
 .chat_wrap[user-theme="dark"] .chat ul { width: 100%; list-style: none; }
 .chat_wrap[user-theme="dark"] .chat ul li { width: 100%; text-align: left; }
-.chat_wrap[user-theme="dark"] .chat ul li > div.time { font-size: 5px; color: darkgray; float: left; padding-right: 5px; }
+.chat_wrap[user-theme="dark"] .chat ul li > div.time { color: darkgray; float: left; padding-right: 5px; }
 .chat_wrap[user-theme="dark"] .chat ul li > div.sender { color: darkgray; float: left; padding-right: 5px; }
 .chat_wrap[user-theme="dark"] .chat ul li > div.message { word-break:break-all; color: var(--main-color); }
 .chat_wrap[user-theme="dark"] .send { display: none; }
