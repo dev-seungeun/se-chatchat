@@ -29,7 +29,6 @@ function Login() {
         }else {
           alert(err.code);
         }
-
       }
     }
   };
