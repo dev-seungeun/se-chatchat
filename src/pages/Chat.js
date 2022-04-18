@@ -56,13 +56,13 @@ function Chat() {
     }
     if(isInitEnd) startAdd = true;
 
-    setTimeout(()=>{ scrollToBottom() }, 200);
+    setTimeout(()=>{ scrollToBottom("timeout") }, 200);
 
   };
 
   const getThemeData = () => {
     const chatWrap = document.querySelector(".chat_wrap")
-    const theme = chatWrap.getAttribute("user-theme");
+    const theme = chatWrap.getAttribute("data-theme");
     return {'chatWrap': chatWrap, 'theme': theme};
   };
 
@@ -87,12 +87,10 @@ function Chat() {
         {
           uid: authService.currentUser.uid,
           email: authService.currentUser.email,
-          // message: msg.replaceAll(/(\n|\r\n)/g, "<br>"),
           message: msg,
           timestamp: Date.now()
         }).then(() => {
           setMsg("");
-          scrollToBottom();
         });
       } catch (error) {
         console.log(error);
@@ -137,19 +135,20 @@ function Chat() {
   }
 
 
-  const handleModal = async(e) => {
+  const handleTheme = (e) => {
     const modeBtn = document.getElementById("modeBtn");
     const themeData = getThemeData();
     const chatWrap = themeData.chatWrap;
     const theme = themeData.theme;
     if(theme == "light") {
-      chatWrap.setAttribute("user-theme", "dark")
+      chatWrap.removeAttribute("data-theme", "light")
+      chatWrap.setAttribute("data-theme", "dark")
       modeBtn.innerText = "LIGHT"
     }else {
-      chatWrap.setAttribute("user-theme", "light")
+      chatWrap.removeAttribute("data-theme", "dark")
+      chatWrap.setAttribute("data-theme", "light")
       modeBtn.innerText = "DARK"
     }
-    getAddedChats(roomName, setChatList);
   }
 
 
@@ -157,9 +156,9 @@ function Chat() {
   let query = useQuery();
   const roomName = query.get("room")
 
-  const scrollRef = useRef();
-  const scrollToBottom = () => {
-    scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' })
+  const messageRef = useRef();
+  const scrollToBottom = (from) => {
+    messageRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }
 
   let itemId = 1;
@@ -176,14 +175,14 @@ function Chat() {
 
   return (
 
-    <div className="chat_wrap" ref={scrollRef} user-theme="light">
+    <div className="chat_wrap" data-theme="light">
       <div className="header">
         <button
           className="mode"
           type="button"
           id="modeBtn"
           value=""
-          onClick={handleModal}>
+          onClick={handleTheme}>
           DARK
         </button>
         <div className="title">SESH</div>
@@ -196,6 +195,7 @@ function Chat() {
       </div>
       <div className="chat">
         {chats}
+        <div ref={messageRef} />
       </div>
       <div className="input-div" onKeyPress={handleKeyPress}>
         <textarea

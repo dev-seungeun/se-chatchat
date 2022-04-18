@@ -34,7 +34,7 @@ html, body { overflow: hidden; }
 }
 
 /* BASIC */
-.chat_wrap[user-theme="light"] {
+.chat_wrap[data-theme="light"] {
   --main-background-color: white;
   --main-color: black;
 	--main-header: 35px;
@@ -42,15 +42,15 @@ html, body { overflow: hidden; }
 	--main-bottom: 80px;
 	--main-input-padding: 10px 75px 10px 10px;
 }
-.chat_wrap[user-theme="light"] .title { width:100%; text-align: center; }
-.chat_wrap[user-theme="light"] .chat ul { width: 100%; list-style: none; margin-top: 10px; }
-.chat_wrap[user-theme="light"] .chat ul li { width: 100%; }
-.chat_wrap[user-theme="light"] .chat ul li.left { text-align: left; }
-.chat_wrap[user-theme="light"] .chat ul li.right { text-align: right; }
-.chat_wrap[user-theme="light"] .chat ul li > div.time { margin: 10px 10px 0 10px; font-size: 5px; color: gray;}
-.chat_wrap[user-theme="light"] .chat ul li > div.sender { margin: 0 10px 0 10px; font-weight: bold; }
-.chat_wrap[user-theme="light"] .chat ul li > div.message { display: inline-block; word-break:break-all; margin: 5px 10px 10px 10px; max-width: 75%; border: 1px solid #888; padding: 5px 10px; border-radius: 3px; background-color: #FCFCFC; color: #555; text-align: left; }
-.chat_wrap[user-theme="light"] .send {
+.chat_wrap[data-theme="light"] .title { width:100%; text-align: center; }
+.chat_wrap[data-theme="light"] .chat ul { width: 100%; list-style: none; margin-top: 10px; }
+.chat_wrap[data-theme="light"] .chat ul li { width: 100%; }
+.chat_wrap[data-theme="light"] .chat ul li.left { text-align: left; }
+.chat_wrap[data-theme="light"] .chat ul li.right { text-align: right; }
+.chat_wrap[data-theme="light"] .chat ul li > div.time { margin: 10px 10px 0 10px; font-size: 5px; color: gray;}
+.chat_wrap[data-theme="light"] .chat ul li > div.sender { margin: 0 10px 0 10px; font-weight: bold; }
+.chat_wrap[data-theme="light"] .chat ul li > div.message { display: inline-block; word-break:break-all; margin: 5px 10px 10px 10px; max-width: 75%; border: 1px solid #888; padding: 5px 10px; border-radius: 3px; background-color: #FCFCFC; color: #555; text-align: left; }
+.chat_wrap[data-theme="light"] .send {
 	position: fixed;
 	background: var(--main-background-color);
 	color: var(--main-color);
@@ -66,7 +66,7 @@ html, body { overflow: hidden; }
 
 
 /* CMD MODE */
-.chat_wrap[user-theme="dark"] {
+.chat_wrap[data-theme="dark"] {
   --main-background-color: black;
   --main-color: white;
 	--main-header: 30px;
@@ -74,9 +74,9 @@ html, body { overflow: hidden; }
 	--main-bottom: 30px;
 	--main-input-padding: 0px;
 }
-.chat_wrap[user-theme="dark"] .chat ul { width: 100%; list-style: none; }
-.chat_wrap[user-theme="dark"] .chat ul li { width: 100%; text-align: left; }
-.chat_wrap[user-theme="dark"] .chat ul li > div.time { color: darkgray; float: left; padding-right: 5px; }
-.chat_wrap[user-theme="dark"] .chat ul li > div.sender { color: darkgray; float: left; padding-right: 5px; }
-.chat_wrap[user-theme="dark"] .chat ul li > div.message { word-break:break-all; color: var(--main-color); }
-.chat_wrap[user-theme="dark"] .send { display: none; }
+.chat_wrap[data-theme="dark"] .chat ul { width: 100%; list-style: none; }
+.chat_wrap[data-theme="dark"] .chat ul li { width: 100%; text-align: left; }
+.chat_wrap[data-theme="dark"] .chat ul li > div.time { color: darkgray; float: left; padding-right: 5px; }
+.chat_wrap[data-theme="dark"] .chat ul li > div.sender { color: darkgray; float: left; padding-right: 5px; }
+.chat_wrap[data-theme="dark"] .chat ul li > div.message { word-break:break-all; color: var(--main-color); }
+.chat_wrap[data-theme="dark"] .send { display: none; }
