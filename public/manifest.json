@@ -1,11 +1,11 @@
 {
-  "short_name": "SESH CHAT",
-  "name": "SeungEun SungHyuk",
+  "short_name": "Version 1.0",
+  "name": "SESH",
   "icons": [
     {
       "src": "logo.ico",
       "sizes": "256x256 128x128 64x64",
-      "type": "image/x-icon" 
+      "type": "image/x-icon"
     },
     {
       "src": "logo.png",
