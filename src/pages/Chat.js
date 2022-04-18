@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { logout } from "../helpers/auth";
 import { authService, database, database_ref } from "../services/firebase";
-import { sendChat, getChats, getAddedChats } from "../helpers/database";
+import { sendChat, getChats, getAddedChats, offRef } from "../helpers/database";
 import useNotification from "../helpers/useNotification";
 import "../chat.css";
 
@@ -15,9 +15,10 @@ function Chat() {
 
   let startAdd = false;
   const [msg, setMsg] = useState("");
+  const [chatList, setChatList] = useState("");
   const [chats, setChats] = useState("");
 
-  const setChatList = (chatList, isInitEnd) => {
+  const setChatUI = (chatList, isInitEnd) => {
     const themeData = getThemeData();
     const myList = () => {
       if(themeData.theme == "light") {
@@ -49,6 +50,7 @@ function Chat() {
       }
     }
     setChats(myList);
+    setChatList(chatList);
 
     const focused = document.hasFocus();
     if(!focused && startAdd) {
@@ -56,7 +58,7 @@ function Chat() {
     }
     if(isInitEnd) startAdd = true;
 
-    setTimeout(()=>{ scrollToBottom("timeout") }, 200);
+    setTimeout(()=>{ scrollToBottom() }, 200);
 
   };
 
@@ -101,7 +103,7 @@ function Chat() {
 // USE EFFECT  ---------------------------------------
   useEffect(() => {
     try {
-      getAddedChats(roomName, setChatList);
+      getAddedChats(roomName, setChatUI);
     } catch (error) {
       console.log(error);
     }
@@ -149,6 +151,7 @@ function Chat() {
       chatWrap.setAttribute("data-theme", "light")
       modeBtn.innerText = "DARK"
     }
+    setChatUI(chatList);
   }
 
 
@@ -157,7 +160,7 @@ function Chat() {
   const roomName = query.get("room")
 
   const messageRef = useRef();
-  const scrollToBottom = (from) => {
+  const scrollToBottom = () => {
     messageRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }
 
@@ -185,7 +188,7 @@ function Chat() {
           onClick={handleTheme}>
           DARK
         </button>
-        <div className="title">SESH</div>
+        <div className="title">{roomName}</div>
         <button
           className="logout"
           type="button"

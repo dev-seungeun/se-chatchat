@@ -1,5 +1,5 @@
 import { database, database_set, database_ref, database_on_value } from "../services/firebase";
-import { onChildAdded, onValue, query, orderByKey, orderByChild, limitToLast, startAt } from "firebase/database";
+import { onChildAdded, off, onValue, query, orderByKey, orderByChild, limitToLast, startAt } from "firebase/database";
 
 export function getRooms(callback) {
   const roomRef = database_ref(database, "chats/rooms");
