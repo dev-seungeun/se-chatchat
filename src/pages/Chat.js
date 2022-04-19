@@ -73,7 +73,7 @@ function Chat() {
       const chat = chatList[chatList.length-1];
       if(chat.uid !== authService.currentUser.uid) {
         useNotification('SESH', {
-          body: ''
+          body: "from '"+roomName+"''"
         });
         // useNotification(chat.email, {
         //   body: `${chat.message}`

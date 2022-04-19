@@ -28,21 +28,13 @@
 }
 
 .logout-room {
-	text-decoration:none;
-	line-height:22px;
-	border-radius:5px;
-	text-align:center;
-	vertical-align:middle;
-	display:inline-block;
-	font-size:10px;
-  font-weight: bold;
+	background: black;
 	color: white;
-	background-color: black;
-	width:60px;
-	height:25px;
-	border-color:#000000;
-	border-width:2px;
-	border-style:solid;
+	border: none;
+	right: 5px;
+	font-size:10px;
+	width: 55px;
+	height: 20px;
 	margin: 10px 10px 0 0;
 	float:right;
 }
