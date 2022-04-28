@@ -12,28 +12,40 @@ function Room() {
   let navigate = useNavigate();
   let isMount = true;
   let selectedRoom = "";
+  let checkRooms = {};
 
   const getRoomList = async() => {
 
     const callback = (rooms) => {
 
-      const myList = () => {
-        const list = Object.keys(rooms).map((roomName, index) => (
-          <li key={createItem(index+"li")}>
-            <button
-              key={createItem(index+"room")}
-              className = "room"
-              type="button"
-              onClick={handleSelectRoom}
-              value={roomName}>
-              <span>{roomName}</span>
-            </button>
-          </li>
-        ));
-        return <ul>{list}</ul>;
-      };
+      Object.keys(rooms).forEach((roomName, index) => (
+        getRoomsAuth(roomName, function(res) {
+          if(Object.keys(res).includes(authService.currentUser.uid)) {
+            checkRooms[roomName] = rooms[roomName]
+          }
+ 
+          if(index+1 == Object.keys(rooms).length) {
+            const myList = () => {
+              const list = Object.keys(checkRooms).map((roomName, index) => (
+                <li key={createItem(index+"li")}>
+                  <button
+                    key={createItem(index+"room")}
+                    className = "room"
+                    type="button"
+                    onClick={handleSelectRoom}
+                    value={roomName}>
+                    <span>{roomName}</span>
+                  </button>
+                </li>
+              ));
+              return <ul>{list}</ul>;
+            };
 
-      setRoomList(myList);
+            setRoomList(myList);
+          }
+        })
+      ));
+
     }
 
     const notiCallback = (roomName, chatInfo) => {
