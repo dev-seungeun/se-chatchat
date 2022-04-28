@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getRoomsInfo, getRoomsAuth } from "../helpers/database";
+import { getRoomsInfo, getRoomsAuth, getCommonInfo, setCommonInfo } from "../helpers/database";
 import { authService } from "../services/firebase";
 import { logout } from "../helpers/auth";
 import useNotification from "../helpers/useNotification";
@@ -11,6 +11,7 @@ function Room() {
   const [roomList, setRoomList] = useState("");
   let navigate = useNavigate();
   let isMount = true;
+  let selectedRoom = "";
 
   const getRoomList = async() => {
 
@@ -36,11 +37,15 @@ function Room() {
     }
 
     const notiCallback = (roomName, chatInfo) => {
-      if(chatInfo.date > Date.now()) {
-        if(isMount) {
-          notify(roomName, chatInfo.uid);
+      getRoomsAuth(roomName, function(res) {
+        if(Object.keys(res).includes(authService.currentUser.uid)) {
+          const selectedRoom = getCommonInfo("selectedRoom");
+          if(chatInfo.date > Date.now()
+                && (isMount || (!isMount && selectedRoom != roomName))) {
+            notify(roomName, chatInfo.uid);
+          }
         }
-      }
+      })
     }
 
     getRoomsInfo(callback, notiCallback);
@@ -59,6 +64,7 @@ function Room() {
 // USE EFFECT  ---------------------------------------
   useEffect(() => {
     getRoomList();
+    setCommonInfo("selectedRoom", "");
     return() => {
       isMount = false;
     }
@@ -75,6 +81,7 @@ function Room() {
       getRoomsAuth(roomName, function(res) {
         if(Object.keys(res).includes(authService.currentUser.uid)) {
           console.log("["+roomName+"] 입장")
+          setCommonInfo("selectedRoom", roomName);
           navigate(`/chat?room=${roomName}`);
         }else {
           alert("'"+roomName+"' 방 입장권한이 없습니다.")

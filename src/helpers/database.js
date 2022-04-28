@@ -1,17 +1,30 @@
 import { database, database_set, database_ref, database_update, database_on_value } from "../services/firebase";
 import { onChildAdded, onChildChanged, off, onValue, query, orderByKey, orderByChild, limitToLast, startAt } from "firebase/database";
 
+const info = {roomsInfo: false, addedChats: {}, selectedRoom: ""};
+
+export function getCommonInfo(key) {
+    return info[key];
+}
+export function setCommonInfo(key, value) {
+    info[key] = value;
+}
+
 export function getRoomsInfo(callback, notiCallback) {
   console.log("getRoomsInfo")
   const roomRef = database_ref(database, "chats/rooms");
   onValue(roomRef, (snapshot) => {
     callback(snapshot.val());
   });
-  onChildChanged(roomRef, (snapshot) => {
-    console.log("getRoomsInfo notiCallback")
-      console.log(snapshot.val())
-    notiCallback(snapshot.key, snapshot.val());
-  });
+  if(!info.roomsInfo) {
+    onChildChanged(roomRef, (snapshot) => {
+      console.log("getRoomsInfo notiCallback")
+        console.log(snapshot.key)
+        console.log(snapshot.val())
+      notiCallback(snapshot.key, snapshot.val());
+    });
+  }
+  info.roomsInfo = true;
 }
 
 export function getRoomsAuth(roomName, callback) {
