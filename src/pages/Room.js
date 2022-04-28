@@ -1,19 +1,23 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getRooms, getRoomsAuth } from "../helpers/database";
+import { getRoomsInfo, getRoomsAuth } from "../helpers/database";
 import { authService } from "../services/firebase";
 import { logout } from "../helpers/auth";
+import useNotification from "../helpers/useNotification";
 import "../rooms.css"
 
 function Room() {
 
-  const [rooms, setRooms] = useState("");
+  const [roomList, setRoomList] = useState("");
   let navigate = useNavigate();
+  let isMount = true;
 
   const getRoomList = async() => {
-    getRooms(function(roomObject) {
+
+    const callback = (rooms) => {
+
       const myList = () => {
-        const list = Object.values(roomObject).map((roomName, index) => (
+        const list = Object.keys(rooms).map((roomName, index) => (
           <li key={createItem(index+"li")}>
             <button
               key={createItem(index+"room")}
@@ -28,15 +32,36 @@ function Room() {
         return <ul>{list}</ul>;
       };
 
-      setRooms(myList);
+      setRoomList(myList);
+    }
 
-    });
+    const notiCallback = (roomName, chatInfo) => {
+      if(chatInfo.date > Date.now()) {
+        if(isMount) {
+          notify(roomName, chatInfo.uid);
+        }
+      }
+    }
+
+    getRoomsInfo(callback, notiCallback);
+
   };
+
+  const notify = (roomName, uid) => {
+    if(uid !== authService.currentUser.uid) {
+      useNotification('SESH', {
+        body: "from '"+roomName+"''"
+      });
+    }
+  }
 
 
 // USE EFFECT  ---------------------------------------
   useEffect(() => {
     getRoomList();
+    return() => {
+      isMount = false;
+    }
   }, []);
 
 
@@ -85,7 +110,7 @@ function Room() {
       </button>
       <br/><br/>
       <div>
-        {rooms}
+        {roomList}
       </div>
     </div>
   );

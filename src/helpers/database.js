@@ -1,10 +1,16 @@
-import { database, database_set, database_ref, database_on_value } from "../services/firebase";
-import { onChildAdded, off, onValue, query, orderByKey, orderByChild, limitToLast, startAt } from "firebase/database";
+import { database, database_set, database_ref, database_update, database_on_value } from "../services/firebase";
+import { onChildAdded, onChildChanged, off, onValue, query, orderByKey, orderByChild, limitToLast, startAt } from "firebase/database";
 
-export function getRooms(callback) {
+export function getRoomsInfo(callback, notiCallback) {
+  console.log("getRoomsInfo")
   const roomRef = database_ref(database, "chats/rooms");
   onValue(roomRef, (snapshot) => {
     callback(snapshot.val());
+  });
+  onChildChanged(roomRef, (snapshot) => {
+    console.log("getRoomsInfo notiCallback")
+      console.log(snapshot.val())
+    notiCallback(snapshot.key, snapshot.val());
   });
 }
 
@@ -12,6 +18,13 @@ export function getRoomsAuth(roomName, callback) {
   const roomAuthRef = query(database_ref(database, 'chats/'+roomName+"/members"), limitToLast(10));
   onValue(roomAuthRef, (snapshot) => {
     callback(snapshot.val());
+  });
+}
+
+export function sendChatTime(roomName, uid) {
+  return database_update(database_ref(database, 'chats/rooms/'+roomName), {
+    date: Date.now()+1000,
+    uid : uid
   });
 }
 

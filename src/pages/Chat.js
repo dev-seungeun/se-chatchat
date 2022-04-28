@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useHistory, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { logout } from "../helpers/auth";
 import { authService, database, database_ref } from "../services/firebase";
-import { sendChat, getChats, getAddedChats, offRef } from "../helpers/database";
+import { sendChat, sendChatTime, getChats, getAddedChats, offRef } from "../helpers/database";
 import useNotification from "../helpers/useNotification";
 import "../chat.css";
 
@@ -13,6 +13,7 @@ function useQuery() {
 
 function Chat() {
 
+  let isMount = true;
   let startAdd = false;
   const [msg, setMsg] = useState("");
   const [chatList, setChatList] = useState("");
@@ -53,19 +54,21 @@ function Chat() {
     setChatList(chatList);
 
     const focused = document.hasFocus();
-    if(!focused && startAdd) {
+    if(!focused && startAdd && isMount) {
       notify(chatList);
     }
     if(isInitEnd) startAdd = true;
 
-    setTimeout(()=>{ scrollToBottom() }, 200);
+    isMount && setTimeout(()=>{ scrollToBottom() }, 200);
 
   };
 
   const getThemeData = () => {
-    const chatWrap = document.querySelector(".chat_wrap")
-    const theme = chatWrap.getAttribute("data-theme");
-    return {'chatWrap': chatWrap, 'theme': theme};
+    if(isMount) {
+      const chatWrap = document.querySelector(".chat_wrap")
+      const theme = chatWrap.getAttribute("data-theme");
+      return {'chatWrap': chatWrap, 'theme': theme};
+    }
   };
 
   const notify = (chatList) => {
@@ -85,6 +88,7 @@ function Chat() {
   const sendMsg = async (e, msg) => {
     if(msg.trim() !== "") {
       try {
+
         await sendChat(roomName,
         {
           uid: authService.currentUser.uid,
@@ -94,6 +98,9 @@ function Chat() {
         }).then(() => {
           setMsg("");
         });
+
+        sendChatTime(roomName, authService.currentUser.uid);
+
       } catch (error) {
         console.log(error);
       }
@@ -102,10 +109,9 @@ function Chat() {
 
 // USE EFFECT  ---------------------------------------
   useEffect(() => {
-    try {
-      getAddedChats(roomName, setChatUI);
-    } catch (error) {
-      console.log(error);
+    getAddedChats(roomName, setChatUI);
+    return() => {
+      isMount = false;
     }
   }, []);
 
