@@ -3,12 +3,13 @@ import { useLocation } from "react-router-dom";
 import { logout } from "../helpers/auth";
 import { authService, database, database_ref } from "../services/firebase";
 import { sendChat, sendChatTime, getChats, getAddedChats, offRef } from "../helpers/database";
-import useNotification from "../helpers/useNotification";
+import { useNotification } from "../helpers/useNotification";
 import "../chat.css";
 
 function useQuery() {
   const { search } = useLocation();
-  return React.useMemo(() => new URLSearchParams(search), [search]);
+  const query = React.useMemo(() => new URLSearchParams(search), [search]);
+  return query;
 }
 
 function Chat() {
@@ -75,9 +76,11 @@ function Chat() {
     if(chatList.length > 0) {
       const chat = chatList[chatList.length-1];
       if(chat.uid !== authService.currentUser.uid) {
-        useNotification('SESH', {
-          body: "from '"+roomName+"''"
+        console.log("NOTI > from chat")
+        const res = useNotification('SESH', {
+          body: "from '"+roomName+"'"
         });
+        console.log(res);
         // useNotification(chat.email, {
         //   body: `${chat.message}`
         // });
@@ -163,7 +166,7 @@ function Chat() {
 
 // ETC ----------------------------------------------
   let query = useQuery();
-  const roomName = query.get("room")
+  const roomName = query.get("room");
 
   const messageRef = useRef();
   const scrollToBottom = () => {

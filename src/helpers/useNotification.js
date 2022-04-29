@@ -1,5 +1,13 @@
 
-const useNotification = (title, option) => {
+import { useNavigate } from "react-router-dom";
+
+// function go(path) {
+//   console.log("go > "+path)
+  // const navigate = useNavigate();
+  // navigate(path);
+  // history.push(path)
+// }
+export function useNotification(title, option) {
 
   if (!("Notification" in window)) {
     return;
@@ -20,14 +28,25 @@ const useNotification = (title, option) => {
       }
     }
   }else {
+    let roomName = option.body.split("from '")[1];
+    roomName = roomName.substring(0, roomName.length-1);
     var notification = new Notification(title, option);
+    // self.addEventListener('notificationclick', function(event) {
     notification.onclick = function(event) {
       event.preventDefault();
       window.focus();
-      // notificationRef.close(); 
+      const path = "http://localhost:3000/#/chat?room="+roomName;
+      // routeChange(path)
+      // document.location.href = path;
+      // return path;
+      // go(path)
+
+      // console.log(url);
+      // window.open(url, "_self");
+
+      // navigate(`/chat?room=${title}`);
+      // notificationRef.close();
     }
   }
 
 };
-
-export default useNotification;

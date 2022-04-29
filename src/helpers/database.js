@@ -11,16 +11,12 @@ export function setCommonInfo(key, value) {
 }
 
 export function getRoomsInfo(callback, notiCallback) {
-  console.log("getRoomsInfo")
   const roomRef = database_ref(database, "chats/rooms");
   onValue(roomRef, (snapshot) => {
     callback(snapshot.val());
   });
   if(!info.roomsInfo) {
     onChildChanged(roomRef, (snapshot) => {
-      console.log("getRoomsInfo notiCallback")
-        console.log(snapshot.key)
-        console.log(snapshot.val())
       notiCallback(snapshot.key, snapshot.val());
     });
   }

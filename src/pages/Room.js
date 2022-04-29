@@ -3,8 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { getRoomsInfo, getRoomsAuth, getCommonInfo, setCommonInfo } from "../helpers/database";
 import { authService } from "../services/firebase";
 import { logout } from "../helpers/auth";
-import useNotification from "../helpers/useNotification";
+import { useNotification } from "../helpers/useNotification";
 import "../rooms.css"
+
+import addNotification from 'react-push-notification';
+import { Notifications } from 'react-push-notification';
 
 function Room() {
 
@@ -13,6 +16,15 @@ function Room() {
   let isMount = true;
   let selectedRoom = "";
   let checkRooms = {};
+  let notiRoomName = "";
+
+  document.addEventListener("visibilitychange", handleVisibilityChange, false);
+  function handleVisibilityChange() {
+    if(document.hidden) {
+    } else {
+      navigate(`/chat?room=${notiRoomName}`);
+    }
+  }
 
   const getRoomList = async() => {
 
@@ -23,7 +35,7 @@ function Room() {
           if(Object.keys(res).includes(authService.currentUser.uid)) {
             checkRooms[roomName] = rooms[roomName]
           }
- 
+
           if(index+1 == Object.keys(rooms).length) {
             const myList = () => {
               const list = Object.keys(checkRooms).map((roomName, index) => (
@@ -55,6 +67,11 @@ function Room() {
           if(chatInfo.date > Date.now()
                 && (isMount || (!isMount && selectedRoom != roomName))) {
             notify(roomName, chatInfo.uid);
+            notiRoomName = roomName;
+            // addNotification({
+            //   title: roomName,
+            //   native:true
+            // })
           }
         }
       })
@@ -66,9 +83,11 @@ function Room() {
 
   const notify = (roomName, uid) => {
     if(uid !== authService.currentUser.uid) {
-      useNotification('SESH', {
-        body: "from '"+roomName+"''"
+      console.log("NOTI > from wating")
+      const res = useNotification('SESH', {
+        body: "from '"+roomName+"'"
       });
+      console.log(res)
     }
   }
 
