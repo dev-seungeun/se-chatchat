@@ -2,7 +2,7 @@ import React, { useState, useHistory, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { logout } from "../helpers/auth";
 import { authService, database, database_ref } from "../services/firebase";
-import { sendChat, sendChatTime, getChats, getAddedChats, offRef } from "../helpers/database";
+import { sendChat, sendChatTime, getChats, getAddedChats, offRef, getCommonInfo, setCommonInfo } from "../helpers/database";
 import { useNotification } from "../helpers/useNotification";
 import "../chat.css";
 
@@ -19,6 +19,7 @@ function Chat() {
   const [msg, setMsg] = useState("");
   const [chatList, setChatList] = useState("");
   const [chats, setChats] = useState("");
+  const [theme, setTheme] = useState("");
 
   const setChatUI = (chatList, isInitEnd) => {
     const themeData = getThemeData();
@@ -68,6 +69,7 @@ function Chat() {
     if(isMount) {
       const chatWrap = document.querySelector(".chat_wrap")
       const theme = chatWrap.getAttribute("data-theme");
+      console.log(theme)
       return {'chatWrap': chatWrap, 'theme': theme};
     }
   };
@@ -111,7 +113,8 @@ function Chat() {
   }
 
 // USE EFFECT  ---------------------------------------
-  useEffect(() => {
+  useEffect(() => { 
+    setTheme(getCommonInfo("theme"));
     getAddedChats(roomName, setChatUI);
     return() => {
       isMount = false;
@@ -155,10 +158,12 @@ function Chat() {
       chatWrap.removeAttribute("data-theme", "light")
       chatWrap.setAttribute("data-theme", "dark")
       modeBtn.innerText = "LIGHT"
+      setCommonInfo("theme", "dark")
     }else {
       chatWrap.removeAttribute("data-theme", "dark")
       chatWrap.setAttribute("data-theme", "light")
       modeBtn.innerText = "DARK"
+      setCommonInfo("theme", "light")
     }
     setChatUI(chatList);
   }
@@ -187,7 +192,7 @@ function Chat() {
 
   return (
 
-    <div className="chat_wrap" data-theme="light">
+    <div className="chat_wrap" data-theme={theme}>
       <div className="header">
         <button
           className="mode"

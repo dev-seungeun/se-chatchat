@@ -1,7 +1,7 @@
 import { database, database_set, database_ref, database_update, database_on_value } from "../services/firebase";
 import { onChildAdded, onChildChanged, off, onValue, query, orderByKey, orderByChild, limitToLast, startAt } from "firebase/database";
 
-const info = {roomsInfo: false, addedChats: {}, selectedRoom: ""};
+const info = {roomsInfo: false, addedChats: {}, selectedRoom: "", theme: "light"};
 
 export function getCommonInfo(key) {
     return info[key];
