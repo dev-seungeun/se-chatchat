@@ -19,7 +19,7 @@ function Chat() {
   const [msg, setMsg] = useState("");
   const [chatList, setChatList] = useState("");
   const [chats, setChats] = useState("");
-  const [theme, setTheme] = useState("");
+  const [themeInfo, setThemeInfo] = useState({theme:"", themeTxt:""});
 
   const setChatUI = (chatList, isInitEnd) => {
     const themeData = getThemeData();
@@ -113,8 +113,9 @@ function Chat() {
   }
 
 // USE EFFECT  ---------------------------------------
-  useEffect(() => { 
-    setTheme(getCommonInfo("theme"));
+  useEffect(() => {
+    const themeInfoTmp = getCommonInfo("themeInfo");
+    setThemeInfo({theme:themeInfoTmp.theme, themeTxt:themeInfoTmp.themeTxt});
     getAddedChats(roomName, setChatUI);
     return() => {
       isMount = false;
@@ -158,12 +159,12 @@ function Chat() {
       chatWrap.removeAttribute("data-theme", "light")
       chatWrap.setAttribute("data-theme", "dark")
       modeBtn.innerText = "LIGHT"
-      setCommonInfo("theme", "dark")
+      setCommonInfo("themeInfo", {theme:"dark", themeTxt:"LIGHT"})
     }else {
       chatWrap.removeAttribute("data-theme", "dark")
       chatWrap.setAttribute("data-theme", "light")
       modeBtn.innerText = "DARK"
-      setCommonInfo("theme", "light")
+      setCommonInfo("themeInfo", {theme:"light", themeTxt:"DARK"})
     }
     setChatUI(chatList);
   }
@@ -192,7 +193,7 @@ function Chat() {
 
   return (
 
-    <div className="chat_wrap" data-theme={theme}>
+    <div className="chat_wrap" data-theme={themeInfo.theme}>
       <div className="header">
         <button
           className="mode"
@@ -200,7 +201,7 @@ function Chat() {
           id="modeBtn"
           value=""
           onClick={handleTheme}>
-          DARK
+          {themeInfo.themeTxt}
         </button>
         <div className="title">{roomName}</div>
         <button
