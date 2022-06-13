@@ -1,6 +1,7 @@
 *{ margin: 0; padding: 0; }
 
 .room-wrap { text-align: center; }
+.room-wrap ul { padding: 0; }
 .room {
 	text-decoration:none;
 	text-align:center;
