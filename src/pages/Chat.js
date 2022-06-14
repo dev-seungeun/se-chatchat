@@ -35,24 +35,15 @@ function Chat() {
     dbChatList.forEach((chat) => {
       var themeData = getThemeData();
       var message = (chat.message+"");
+
+      /* START 채팅말풍선 구성 */
       if((themeData && themeData.theme == "dark") || (themeInfo && themeInfo.theme == "dark")) {
 
-        list = '<li '
-        list += chat.uid === authService.currentUser.uid ? 'right>' : 'left>';
+        list = '<li>'
+        // list += chat.uid === authService.currentUser.uid ? 'right>' : 'left>';
         list += '<div class = "sender"><span>C:\\Users\\'+chat.email+'</span></div>';
         list += '<div class = "time"><span>'+toDate(chat.timestamp)+' ></span></div>';
         list += '<div class = "message">';
-
-        if(message.includes("image_send_check")) {
-          setFileUrl(message.split(":")[1]);
-          list += '<img id="img_id_'+chat.message.split(":")[1]+'" src="" />';
-        }else {
-          message.split("\n").map( line => {
-            list += '<span>'+line+'<br/></span>';
-          });
-        }
-        list += '</div></li>';
-
       }else {
 
         list = '<li '
@@ -61,29 +52,31 @@ function Chat() {
         list += '<div class = "sender"><span>'+chat.email+'</span></div>';
         list += '<div class = "message">';
 
-        if(message.includes("image_send_check")) {
-          setFileUrl(message.split(":")[1]);
-          list += '<img id="img_id_'+chat.message.split(":")[1]+'" src="" />';
-        }else {
-          message.split("\n").map( line => {
-            list += '<span>'+line+'<br/></span>';
-          });
-        }
-
-        list += '</div></li>';
-
       }
+
+      if(message.includes("image_send_check")) {
+        var id = message.split(":")[1];
+        setFileUrl(id);
+        list += '<img class="msg_img" id="img_id_'+chat.message.split(":")[1]+'" src="" style="display:none;" />';
+      }else {
+        message.split("\n").map( line => {
+          list += '<span>'+line+'<br/></span>';
+        });
+      }
+
+      list += '</div></li>';
+      /* END */
+
 
       $("#chatUL").append(list);
       chatTemp.push(chat);
 
       const focused = document.hasFocus();
-      console.log(focused);
-      console.log(startAdd);
-      console.log(isMount);
       if(!focused && startAdd && isMount) {
         notify(chat);
       }
+
+      $(".msg_img").on('click', openImageModal);
 
     })
 
@@ -126,7 +119,9 @@ function Chat() {
   var checkImgRstCnt = 0;
   const setFileUrl = (fileName) => {
     checkImgCnt = checkImgCnt + 1;
-    LoadingWithMask();
+    if(checkImgCnt != checkImgRstCnt) {
+      LoadingWithMask();
+    }
     const id = "img_id_"+fileName;
     const storageRef = down_url(storage_ref(storage, getToday()+"/"+roomName+"/images/"+fileName))
       .then((url) => {
@@ -137,13 +132,18 @@ function Chat() {
           };
           xhr.open('GET', url);
           xhr.send();
-          document.getElementById(id).src = url;
 
-          checkImgRstCnt = checkImgRstCnt + 1;
-          if(checkImgCnt == checkImgRstCnt) {
-            setTimeout(closeLoadingWithMask, 2000);
-          }
-
+          var downloadingImage = new Image();
+          downloadingImage.src = url;
+          downloadingImage.onload = function(){
+            checkImgRstCnt = checkImgRstCnt + 1;
+            document.getElementById(id).src = this.src;
+            document.getElementById(id).style.display = "block";
+            if(checkImgCnt == checkImgRstCnt) {
+              closeLoadingWithMask();
+              scrollToBottom();
+            }
+          };
         })
         .catch((error) => {
         });
@@ -158,7 +158,6 @@ function Chat() {
   const sendMsg = async (e, msg) => {
     if(src != "" && !src.includes("DONE")) {
       try {
-        console.log("sendIMG!!!");
         LoadingWithMask();
         const self = this;
         const fileName = Date.now()+"_"+Math.floor(Math.random() * 100)+".png";
@@ -177,9 +176,8 @@ function Chat() {
       }
     }
 
-    if(msg.trim() !== "") {
+    if(msg && msg.trim() !== "") {
       try {
-        console.log("sendMSG!!!");
         await sendChat(roomName,
         {
           uid: authService.currentUser.uid,
@@ -191,9 +189,6 @@ function Chat() {
         });
 
         sendChatTime(roomName, authService.currentUser.uid);
-        if(msg.includes("image_send_check:")) {
-          closeLoadingWithMask();
-        }
 
       } catch (error) {
         console.log(error);
@@ -201,17 +196,9 @@ function Chat() {
     }
   }
 
-  const escFunction = useCallback((event) => {
-    if(event.keyCode === 27) {
-      setSrc("");
-      document.getElementById("input-image").style.display = "none";
-    }
-  }, []);
-
 
 // USE EFFECT  ---------------------------------------
   useEffect(() => {
-
     const themeInfoTmp = getCommonInfo("themeInfo");
     setThemeInfo({theme:themeInfoTmp.theme, themeTxt:themeInfoTmp.themeTxt});
     getAddedChats(roomName, setChatUI);
@@ -230,10 +217,15 @@ function Chat() {
 
       const fileName = src.split("-")[1];
       sendMsg(null, "image_send_check:"+fileName);
-
-      // closeLoadingWithMask();
     }
   }, [src]);
+
+  const escFunction = useCallback((event) => {
+    if(event.keyCode === 27) {
+      setSrc("");
+      document.getElementById("input-image").style.display = "none";
+    }
+  }, []);
 
   // useEffect(() => {
   //   // 이미지 전송 체크 msg 전송
@@ -321,6 +313,36 @@ function Chat() {
     }
   }
 
+  const handleChangeFile = (e) => {
+    for(var i=0;i<e.target.files.length;i++){
+      if (e.target.files[i]) {
+        let reader = new FileReader();
+        reader.readAsDataURL(e.target.files[i]);
+        reader.onloadend = () => {
+          const base64 = reader.result;
+          if (base64) {
+            var base64Str = base64.toString()
+            setSrc(base64Str);
+            document.getElementById("input-image").style.display = "block";
+
+           // Base64 to File
+            var arr = base64Str.split(','),
+                mime = arr[0].match(/:(.*?);/)[1],
+                bstr = atob(arr[1]),
+                n = bstr.length,
+                u8arr = new Uint8Array(n);
+            while(n--){
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+
+            var file = new File([u8arr], Date.now()+Math.floor(Math.random()*100));
+            setImgFile(file);
+            document.getElementById("textarea").focus();
+          }
+        }
+      }
+    }
+  }
 
 // ETC ----------------------------------------------
   let query = useQuery();
@@ -352,6 +374,15 @@ function Chat() {
     document.getElementById('loadingImg').style.display = "none";
   };
 
+  const openImageModal = (e) => {
+    document.getElementById("modal").style.display = "block";
+    const imgSrc = document.getElementById(e.currentTarget.id).src;
+    document.getElementById("modalBoxImg").src = imgSrc;
+  };
+
+  const closeImageModal = (e) => {
+    document.getElementById("modal").style.display = "none";
+  };
 // --------------------------------------------------
 
 
@@ -384,6 +415,7 @@ function Chat() {
       </div>
       <div className="input-div" onKeyPress={handleKeyPress}>
         <textarea
+          id="textarea"
           className="input-msg"
           value={msg}
           placeholder="Message Here."
@@ -391,6 +423,13 @@ function Chat() {
           onPaste={handleOnPaste}
         >
         </textarea>
+        <div className="image-upload">
+          <label htmlFor="file_input">
+            <img src={process.env.PUBLIC_URL+"/file_input.png"}/>
+            <span>FILE</span>
+          </label>
+          <input id="file_input" type="file" accept="image/*" onChange={handleChangeFile} />
+        </div>
         <button
           className="send"
           type="button"
@@ -404,9 +443,18 @@ function Chat() {
         <img id="loadingImg" src={process.env.PUBLIC_URL+'/loader.gif'} />
       </div>
 
+    	<div id="modal" className="modal" onClick={closeImageModal}>
+    		<button onClick={closeImageModal}>&times;</button>
+    		<div id="modalBox" className="modalBox">
+    			<img id="modalBoxImg" src="" />
+    		</div>
+    	</div>
     </div>
-
   );
+
+  // $(document).ready(function(){     
+  //   $(".msg_img").on("click", openImageModal);
+  // });
 }
 
 export default Chat;
