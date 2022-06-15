@@ -28,14 +28,15 @@ export function useNotification(title, option) {
       }
     }
   }else {
-    let roomName = option.body.split("from '")[1];
-    roomName = roomName.substring(0, roomName.length-1);
+    // let roomName = option.body.split("from '")[1];
+    // roomName = option.roomName; //roomName.substring(0, roomName.length-1);
     var notification = new Notification(title, option);
     // self.addEventListener('notificationclick', function(event) {
     notification.onclick = function(event) {
       event.preventDefault();
       window.focus();
-      const path = "http://localhost:3000/#/chat?room="+roomName;
+      console.log(option.roomName);
+      const path = "http://localhost:3000/#/chat?room="+option.roomName;
       // routeChange(path)
       // document.location.href = path;
       // return path;

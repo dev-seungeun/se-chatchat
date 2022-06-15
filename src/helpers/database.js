@@ -1,7 +1,7 @@
 import { database, database_set, database_ref, database_update, database_on_value } from "../services/firebase";
 import { onChildAdded, onChildChanged, off, get, child, onValue, query, orderByKey, orderByChild, limitToLast, startAt } from "firebase/database";
 
-const info = {roomsInfo: false, addedChats: {}, selectedRoom: "", themeInfo: {theme:"light", themeTxt:"DARK"}};
+const info = {selectedRoom: "", themeInfo: {theme:"light", themeBtnValue:"DARK"}};
 
 export function getCommonInfo(key) {
     return info[key];
@@ -41,10 +41,11 @@ export function sendChat(roomName, data) {
   const date = new Date();
   const today = date.getFullYear()+""+("0" + (date.getMonth() + 1)).slice(-2)+""+("0" + date.getDate()).slice(-2);
   return database_set(database_ref(database, 'chats/'+roomName+"/messages/"+today+"/"+data.timestamp), {
-    message: data.message,
-    timestamp: data.timestamp,
+    uid: data.uid,
     email: data.email,
-    uid: data.uid
+    message: data.message,
+    imgUrl: data.imgUrl,
+    timestamp: data.timestamp
   });
 }
 
@@ -55,42 +56,12 @@ export function getAddedChats(roomName, callback) {
   let lastChat = null;
   const chatRef = query(database_ref(database, 'chats/'+roomName+"/messages/"+today), limitToLast(10));
   onChildAdded(chatRef, (snapshot) => {
-
     if(snapshot.val().hasOwnProperty("uid")) {
-      // chatList.push(snapshot.val());
-      callback([snapshot.val()]);
+      callback(snapshot.val());
     }
-    // callback(chatList);
-
-    // checkMsg(roomName, today, function(checkResult) {
-    //   if(checkResult) {
-    //     console.log(chatList);
-    //     parentCall(chatList);
-    //   }
-    // });
-
-  });
-  callback(chatList, true);
-}
-
-async function checkMsg(roomName, today, callback) {
-  // 마지막 childAdded (10개) 만 그려주기 위해
-  var index = 0;
-  get(child(database_ref(database), 'chats/'+roomName+"/messages/"+today))
-  .then((snapshot_sub) => {
-    snapshot_sub.forEach(function(chat) {
-      index = index + 1;
-      if(snapshot_sub.size == index) {
-        callback(true);
-      }else {
-        callback(false);
-      }
-    });
-  }).catch((error) => {
-    console.error(error);
-    callback(false);
   });
 }
+
 /*
 export function getChats(roomName, callback) {
   let chatList = [];

@@ -4,6 +4,7 @@ import { logout } from "../helpers/auth";
 import { authService, database, database_ref, storage, storage_ref, upload_byte, down_url } from "../services/firebase";
 import { sendChat, sendChatTime, getChats, getAddedChats, offRef, getCommonInfo, setCommonInfo } from "../helpers/database";
 import { useNotification } from "../helpers/useNotification";
+import ChatItem from "../components/ChatItem"
 import "../chat.css";
 
 function useQuery() {
@@ -14,115 +15,109 @@ function useQuery() {
 
 function Chat() {
 
-  let storageUrl = "gs://sesh-chatchat.appspot.com/";
+  let themeObj = {dark : {theme:"dark", themeBtnValue:"LIGHT"},
+                  light: {theme:"light", themeBtnValue:"DARK"}};
   let isMount = true;
-  let startAdd = false;
-  let chatTemp = [];
+  let chatTemp = [];  
+
+  const [showScreen, setShowScreen] = useState(false);
+  const [themeInfo, setThemeInfo] = useState(themeObj.light);
   const [msg, setMsg] = useState("");
-  const [chats, setChats] = useState("");
-  const [chatList, setChatList] = useState("");
-  const [themeInfo, setThemeInfo] = useState({theme:"", themeTxt:""});
+  const [chatList, setChatList] = useState([]);
   const [src, setSrc] = useState("");
   const [imgFile, setImgFile] = useState();
 
-  const setChatUI = (dbChatList, isInitEnd, isClean) => {
+  const setChatUI = (dbChatObj, isInitEnd, isClean) => {
 
-    if(isClean) {
-      $("#chatUL").empty();
-    }
-
-    var list = "";
-    dbChatList.forEach((chat) => {
-      var themeData = getThemeData();
-      var message = (chat.message+"");
-
-      /* START 채팅말풍선 구성 */
-      if((themeData && themeData.theme == "dark") || (themeInfo && themeInfo.theme == "dark")) {
-
-        list = '<li>'
-        // list += chat.uid === authService.currentUser.uid ? 'right>' : 'left>';
-        list += '<div class = "sender"><span>C:\\Users\\'+chat.email+'</span></div>';
-        list += '<div class = "time"><span>'+toDate(chat.timestamp)+' ></span></div>';
-        list += '<div class = "message">';
-      }else {
-
-        list = '<li '
-        list += chat.uid === authService.currentUser.uid ? 'class="right">' : 'class="left">';
-        list += '<div class = "time"><span>'+toDate(chat.timestamp)+'</span></div>';
-        list += '<div class = "sender"><span>'+chat.email+'</span></div>';
-        list += '<div class = "message">';
-
-      }
-
-      if(message.includes("image_send_check")) {
-        var id = message.split(":")[1];
-        setFileUrl(id);
-        list += '<img class="msg_img" id="img_id_'+chat.message.split(":")[1]+'" src="" style="display:none;" />';
-      }else {
-        message.split("\n").map( line => {
-          list += '<span>'+line+'<br/></span>';
-        });
-      }
-
-      list += '</div></li>';
-      /* END */
-
-
-      $("#chatUL").append(list);
-      chatTemp.push(chat);
-
-      const focused = document.hasFocus();
-      if(!focused && startAdd && isMount) {
-        notify(chat);
-      }
-
-      $(".msg_img").on('click', openImageModal);
-
-    })
-
+    chatTemp = chatTemp.concat(dbChatObj);
     setChatList(chatTemp);
 
-    // const focused = document.hasFocus();
-    // if(!focused && startAdd && isMount) {
-    //   notify(chatList);
-    // }
-    if(isInitEnd) startAdd = true;
-
-    isMount && setTimeout(()=>{ scrollToBottom() }, 200);
-  };
-
-  const getThemeData = () => {
-    if(isMount) {
-      const chatWrap = document.querySelector(".chat_wrap")
-      const theme = chatWrap.getAttribute("data-theme");
-      return {'chatWrap': chatWrap, 'theme': theme};
+    const focused = document.hasFocus();
+    if(!focused && isMount) {
+      notify(dbChatObj);
     }
+
+    isMount && scrollToBottom();
+
   };
 
   const notify = (chat) => {
-    // if(chatList.length > 0) {
-      // const chat = chatList[chatList.length-1];
-      if(chat.uid !== authService.currentUser.uid) {
-        console.log("NOTI > from chat")
-        const res = useNotification('SESH', {
-          body: "from '"+roomName+"'"
-        });
-        console.log(res);
-        // useNotification(chat.email, {
-        //   body: `${chat.message}`
-        // });
-      }
-    // }
+    if(chat.uid !== authService.currentUser.uid) {
+      console.log("NOTI > from chat > "+chat.email);
+      const res = useNotification('SESH', {
+        body: chat.email,
+        roomName : roomName
+      });
+      // console.log(res);
+      // useNotification(chat.email, {
+      //   body: `${chat.message}`
+      // });
+    }
   }
+
+  const sendData = (msg, imgUrl) => {
+    if(msg && msg.trim() !== "") {
+      sendMsg(msg, imgUrl != undefined ? imgUrl : "")
+    }else if(src != "") {
+      sendImg();
+    }
+  }
+
+  const sendMsg = async (msg, imgUrl) => {
+    try {
+
+      await sendChat(roomName,
+      {
+        uid: authService.currentUser.uid,
+        email: authService.currentUser.email,
+        message: msg,
+        imgUrl: imgUrl,
+        timestamp: Date.now()
+      }).then(() => {
+        setMsg("");
+      });
+
+      sendChatTime(roomName, authService.currentUser.uid);
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const sendImg = () => {
+    try {
+      LoadingWithMask();
+      const fileName = Date.now()+"_"+Math.floor(Math.random() * 100)+".png";
+      const storageRef = storage_ref(storage, getToday()+"/"+roomName+"/images/"+fileName);
+      upload_byte(storageRef, imgFile)
+        .then(
+          (snapshot) => {
+            document.getElementById("input-image").style.display = "none";
+            sendData("image_send_check:"+fileName, src);
+            setSrc("");
+            closeLoadingWithMask();
+          },
+          (error) => {
+            console.log(error);
+          }
+        );
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+/* <IMAGE DOWNLOAD>
 
   var checkImgCnt = 0;
   var checkImgRstCnt = 0;
-  const setFileUrl = (fileName) => {
+  const getFileUrl = (fileName) => {
     checkImgCnt = checkImgCnt + 1;
     if(checkImgCnt != checkImgRstCnt) {
       LoadingWithMask();
     }
     const id = "img_id_"+fileName;
+    console.log(id);
+    console.log(document.getElementById(id));
     const storageRef = down_url(storage_ref(storage, getToday()+"/"+roomName+"/images/"+fileName))
       .then((url) => {
           const xhr = new XMLHttpRequest();
@@ -145,80 +140,24 @@ function Chat() {
             }
           };
         })
-        .catch((error) => {
-        });
+      .catch((error) => {
+      });
   }
-
-  const getToday = () => {
-    const date = new Date();
-    const today = date.getFullYear()+""+("0" + (date.getMonth() + 1)).slice(-2)+""+("0" + date.getDate()).slice(-2);
-    return today;
-  }
-
-  const sendMsg = async (e, msg) => {
-    if(src != "" && !src.includes("DONE")) {
-      try {
-        LoadingWithMask();
-        const self = this;
-        const fileName = Date.now()+"_"+Math.floor(Math.random() * 100)+".png";
-        const storageRef = storage_ref(storage, getToday()+"/"+roomName+"/images/"+fileName);
-        upload_byte(storageRef, imgFile)
-          .then(
-            (snapshot) => {
-              setSrc("DONE-"+fileName);
-            },
-            (error) => {
-              console.log(error);
-            }
-          );
-      } catch (error) {
-        console.log(error);
-      }
-    }
-
-    if(msg && msg.trim() !== "") {
-      try {
-        await sendChat(roomName,
-        {
-          uid: authService.currentUser.uid,
-          email: authService.currentUser.email,
-          message: msg,
-          timestamp: Date.now()
-        }).then(() => {
-          setMsg("");
-        });
-
-        sendChatTime(roomName, authService.currentUser.uid);
-
-      } catch (error) {
-        console.log(error);
-      }
-    }
-  }
+*/
 
 
-// USE EFFECT  ---------------------------------------
+// USE_EFFECT & USE_CALLBACK ---------------------------------------
   useEffect(() => {
-    const themeInfoTmp = getCommonInfo("themeInfo");
-    setThemeInfo({theme:themeInfoTmp.theme, themeTxt:themeInfoTmp.themeTxt});
+    setThemeInfo(getCommonInfo("themeInfo"));
     getAddedChats(roomName, setChatUI);
     document.addEventListener("keydown", escFunction, false);
+    setShowScreen(true);
 
     return() => {
       isMount = false;
       document.removeEventListener("keydown", escFunction, false);
     }
   }, []);
-
-  useEffect(() => {
-    if(src.includes("DONE")) {
-      setSrc("");
-      document.getElementById("input-image").style.display = "none";
-
-      const fileName = src.split("-")[1];
-      sendMsg(null, "image_send_check:"+fileName);
-    }
-  }, [src]);
 
   const escFunction = useCallback((event) => {
     if(event.keyCode === 27) {
@@ -227,26 +166,10 @@ function Chat() {
     }
   }, []);
 
-  // useEffect(() => {
-  //   // 이미지 전송 체크 msg 전송
-  //   sendChat(roomName,
-  //   {
-  //     uid: authService.currentUser.uid,
-  //     email: authService.currentUser.email,
-  //     message: "image_send_check:"+fileName,
-  //     timestamp: Date.now()
-  //   }).then(() => {
-  //   });
-  //
-  //   sendChatTime(roomName, authService.currentUser.uid);
-  //
-  //   return() => {
-  //   }
-  // }, [uploadState]);
 
 // HANDLE  -------------------------------------------
   const handleSendMsg = async (e) => {
-    sendMsg(e, msg);
+    sendData(msg);
   };
 
   const handleLogOut = async () => {
@@ -261,33 +184,18 @@ function Chat() {
     setMsg(e.target.value);
   };
 
-
   const handleKeyPress = async(e) => {
     if(e.key == 'Enter') {
       if(!e.shiftKey) {
-        sendMsg(e, msg);
+        sendData(msg);
       }
     }
   }
 
-
   const handleTheme = (e) => {
-    const modeBtn = document.getElementById("modeBtn");
-    const themeData = getThemeData();
-    const chatWrap = themeData.chatWrap;
-    const theme = themeData.theme;
-    if(theme == "light") {
-      chatWrap.removeAttribute("data-theme", "light")
-      chatWrap.setAttribute("data-theme", "dark")
-      modeBtn.innerText = "LIGHT"
-      setCommonInfo("themeInfo", {theme:"dark", themeTxt:"LIGHT"})
-    }else {
-      chatWrap.removeAttribute("data-theme", "dark")
-      chatWrap.setAttribute("data-theme", "light")
-      modeBtn.innerText = "DARK"
-      setCommonInfo("themeInfo", {theme:"light", themeTxt:"DARK"})
-    }
-    setChatUI(chatList, false, true);
+    setCommonInfo("themeInfo", themeInfo.theme == "light" ? themeObj.dark : themeObj.light)
+    setThemeInfo(themeInfo.theme == "light" ? themeObj.dark : themeObj.light);
+    scrollToBottom();
   }
 
   const handleOnPaste = (e) => {
@@ -350,18 +258,15 @@ function Chat() {
 
   const messageRef = useRef();
   const scrollToBottom = () => {
-    messageRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    setTimeout(() => {
+      messageRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    }, 200);
   }
 
-  let itemId = 1;
-  const createItem = (text) => {
-    return (itemId++) + text;
-  }
-
-  const toDate = (timestamp) => {
-    //let date = new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(timestamp);
-    let date = new Intl.DateTimeFormat('ko-KR', {  hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(timestamp);
-    return date;
+  const getToday = () => {
+    const date = new Date();
+    const today = date.getFullYear()+""+("0" + (date.getMonth() + 1)).slice(-2)+""+("0" + date.getDate()).slice(-2);
+    return today;
   }
 
   const LoadingWithMask = () => {    
@@ -387,16 +292,15 @@ function Chat() {
 
 
   return (
-
+    showScreen &&
     <div className="chat_wrap" data-theme={themeInfo.theme}>
       <div className="header">
         <button
           className="mode"
           type="button"
           id="modeBtn"
-          value=""
           onClick={handleTheme}>
-          {themeInfo.themeTxt}
+          {themeInfo.themeBtnValue}
         </button>
         <div className="title">{roomName}</div>
         <button
@@ -407,7 +311,14 @@ function Chat() {
         </button>
       </div>
       <div id="chat" className="chat">
-        <ul id="chatUL"></ul>
+        <ul>
+          {chatList.map((chat, index) => {
+              return <ChatItem theme={themeInfo.theme}
+                               chat={chat}
+                               openImageModal={openImageModal}
+                               key={index} />
+          })}
+        </ul>
         <div ref={messageRef} />
         <img id="input-image"
              className="input-image"
@@ -423,9 +334,9 @@ function Chat() {
           onPaste={handleOnPaste}
         >
         </textarea>
-        <div className="image-upload">
+        <div id="image_upload">
           <label htmlFor="file_input">
-            <img src={process.env.PUBLIC_URL+"/file_input.png"}/>
+            <img src="file_input.png" />
             <span>FILE</span>
           </label>
           <input id="file_input" type="file" accept="image/*" onChange={handleChangeFile} />

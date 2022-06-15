@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getRoomsInfo, getRoomsAuth, getCommonInfo, setCommonInfo } from "../helpers/database";
 import { authService } from "../services/firebase";
-import { logout } from "../helpers/auth";
+import { logout } from "../helpers/auth"; 
 import { useNotification } from "../helpers/useNotification";
 import "../rooms.css"
 
@@ -18,13 +18,13 @@ function Room() {
   let checkRooms = {};
   let notiRoomName = "";
 
-  document.addEventListener("visibilitychange", handleVisibilityChange, false);
-  function handleVisibilityChange() {
-    if(document.hidden) {
-    } else {
-      navigate(`/chat?room=${notiRoomName}`);
-    }
-  }
+  // document.addEventListener("visibilitychange", handleVisibilityChange, false);
+  // function handleVisibilityChange() {
+  //   if(document.hidden) {
+  //   } else {
+  //     navigate(`/chat?room=${notiRoomName}`);
+  //   }
+  // }
 
   const getRoomList = async() => {
 
@@ -83,7 +83,7 @@ function Room() {
 
   const notify = (roomName, uid) => {
     if(uid !== authService.currentUser.uid) {
-      console.log("NOTI > from wating")
+      console.log("NOTI > from wating-room")
       const res = useNotification('SESH', {
         body: "from '"+roomName+"'"
       });
