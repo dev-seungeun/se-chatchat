@@ -1,17 +1,27 @@
-import { authService, createUserEmail, signInEmail, googleProvider, signInGooglePopup } from "../services/firebase";
+import { auth, createUserEmail, signInEmail, googleProvider, signInGooglePopup } from "../services/firebase";
 
-export function signUp(email, password) {
-  return createUserEmail(authService, email, password);
+export function _authSignUp(email, password) {
+  return createUserEmail(auth, email, password);
 }
 
-export function signIn(email, password) {
-  return signInEmail(authService, email, password);
+export function _authSignIn(email, password) {
+  return signInEmail(auth, email, password);
 }
 
-export function signInWithGoogle() {
-  return signInGooglePopup(authService, googleProvider);
+export function _authSignInWithGoogle() {
+  return signInGooglePopup(auth, googleProvider);
 }
 
-export function logout() {
-  return authService.signOut();
+export function _authLogout() {
+  return auth.signOut();
+}
+
+export function _authGetCurrentUser() {
+  return auth.currentUser;
+}
+
+export function _authStateChagned(callback) {
+  auth.onAuthStateChanged((user) => {
+    callback(user)
+  });
 }

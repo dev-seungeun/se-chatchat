@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getRoomsInfo, getRoomsAuth, getCommonInfo, setCommonInfo } from "../helpers/database";
-import { authService } from "../services/firebase";
-import { logout } from "../helpers/auth"; 
-import { useNotification } from "../helpers/useNotification";
+import { _commonGetCommonInfo, _commonSetCommonInfo } from "../helpers/common";
+import { _databaseGetRoomsInfo, _databaseGetRoomsAuth } from "../helpers/database";
+import { _authLogout, _authGetCurrentUser } from "../helpers/auth";
+import { _sendNotification } from "../helpers/useNotification";
 import "../rooms.css"
-
-import addNotification from 'react-push-notification';
-import { Notifications } from 'react-push-notification';
 
 function Room() {
 
@@ -18,21 +15,13 @@ function Room() {
   let checkRooms = {};
   let notiRoomName = "";
 
-  // document.addEventListener("visibilitychange", handleVisibilityChange, false);
-  // function handleVisibilityChange() {
-  //   if(document.hidden) {
-  //   } else {
-  //     navigate(`/chat?room=${notiRoomName}`);
-  //   }
-  // }
-
   const getRoomList = async() => {
 
     const callback = (rooms) => {
 
       Object.keys(rooms).forEach((roomName, index) => (
-        getRoomsAuth(roomName, function(res) {
-          if(Object.keys(res).includes(authService.currentUser.uid)) {
+        _databaseGetRoomsAuth(roomName, function(res) {
+          if(Object.keys(res).includes(_authGetCurrentUser().uid)) {
             checkRooms[roomName] = rooms[roomName]
           }
 
@@ -61,33 +50,30 @@ function Room() {
     }
 
     const notiCallback = (roomName, chatInfo) => {
-      getRoomsAuth(roomName, function(res) {
-        if(Object.keys(res).includes(authService.currentUser.uid)) {
-          const selectedRoom = getCommonInfo("selectedRoom");
+      _databaseGetRoomsAuth(roomName, function(res) {
+        if(Object.keys(res).includes(_authGetCurrentUser().uid)) {
+          const selectedRoom = _commonGetCommonInfo("selectedRoom");
           if(chatInfo.date > Date.now()
                 && (isMount || (!isMount && selectedRoom != roomName))) {
-            notify(roomName, chatInfo.uid);
+            notify(roomName, chatInfo);
             notiRoomName = roomName;
-            // addNotification({
-            //   title: roomName,
-            //   native:true
-            // })
           }
         }
       })
     }
 
-    getRoomsInfo(callback, notiCallback);
+    _databaseGetRoomsInfo(callback, notiCallback);
 
   };
 
-  const notify = (roomName, uid) => {
-    if(uid !== authService.currentUser.uid) {
+  const notify = (roomName, chat) => {
+    if(chat.uid !== _authGetCurrentUser().uid) {
       console.log("NOTI > from wating-room")
-      const res = useNotification('SESH', {
-        body: "from '"+roomName+"'"
+      const res = _sendNotification('SESH', {
+        body: chat.email,
+        roomName : roomName
       });
-      console.log(res)
+      // console.log(res)
     }
   }
 
@@ -95,7 +81,7 @@ function Room() {
 // USE EFFECT  ---------------------------------------
   useEffect(() => {
     getRoomList();
-    setCommonInfo("selectedRoom", "");
+    _commonSetCommonInfo("selectedRoom", "");
     return() => {
       isMount = false;
     }
@@ -109,10 +95,10 @@ function Room() {
     if(roomName == undefined || roomName == "undefined") {
       alert("방을 다시 선택해주세요");
     }else {
-      getRoomsAuth(roomName, function(res) {
-        if(Object.keys(res).includes(authService.currentUser.uid)) {
+      _databaseGetRoomsAuth(roomName, function(res) {
+        if(Object.keys(res).includes(_authGetCurrentUser().uid)) {
           console.log("["+roomName+"] 입장")
-          setCommonInfo("selectedRoom", roomName);
+          _commonSetCommonInfo("selectedRoom", roomName);
           navigate(`/chat?room=${roomName}`);
         }else {
           alert("'"+roomName+"' 방 입장권한이 없습니다.")

@@ -1,43 +1,35 @@
-import { database, database_set, database_ref, database_update, database_on_value } from "../services/firebase";
-import { onChildAdded, onChildChanged, off, get, child, onValue, query, orderByKey, orderByChild, limitToLast, startAt } from "firebase/database";
+import { database, database_ref, database_set, database_update, database_query, database_limit_to_last,
+         database_on_child_added, database_on_child_changed, database_on_value } from "../services/firebase";
+import { _commonGetCommonInfo, _commonSetCommonInfo } from "./common"
 
-const info = {selectedRoom: "", themeInfo: {theme:"light", themeBtnValue:"DARK"}};
-
-export function getCommonInfo(key) {
-    return info[key];
-}
-export function setCommonInfo(key, value) {
-    info[key] = value;
-}
-
-export function getRoomsInfo(callback, notiCallback) {
+export function _databaseGetRoomsInfo(callback, notiCallback) {
   const roomRef = database_ref(database, "chats/rooms");
-  onValue(roomRef, (snapshot) => {
+  database_on_value(roomRef, (snapshot) => {
     callback(snapshot.val());
   });
-  if(!info.roomsInfo) {
-    onChildChanged(roomRef, (snapshot) => {
+  if(!_commonGetCommonInfo('roomsInfo')) {
+    database_on_child_changed(roomRef, (snapshot) => {
       notiCallback(snapshot.key, snapshot.val());
     });
   }
-  info.roomsInfo = true;
+  _commonSetCommonInfo('roomsInfo', true);
 }
 
-export function getRoomsAuth(roomName, callback) {
-  const roomAuthRef = query(database_ref(database, 'chats/'+roomName+"/members"), limitToLast(10));
-  onValue(roomAuthRef, (snapshot) => {
+export function _databaseGetRoomsAuth(roomName, callback) {
+  const roomAuthRef = database_query(database_ref(database, 'chats/'+roomName+"/members"), database_limit_to_last(10));
+  database_on_value(roomAuthRef, (snapshot) => {
     callback(snapshot.val());
   });
 }
 
-export function sendChatTime(roomName, uid) {
+export function _databaseSendChatTime(roomName, uid) {
   return database_update(database_ref(database, 'chats/rooms/'+roomName), {
     date: Date.now()+1000,
     uid : uid
   });
 }
 
-export function sendChat(roomName, data) {
+export function _databaseSendChat(roomName, data) {
   const date = new Date();
   const today = date.getFullYear()+""+("0" + (date.getMonth() + 1)).slice(-2)+""+("0" + date.getDate()).slice(-2);
   return database_set(database_ref(database, 'chats/'+roomName+"/messages/"+today+"/"+data.timestamp), {
@@ -49,31 +41,15 @@ export function sendChat(roomName, data) {
   });
 }
 
-export function getAddedChats(roomName, callback) {
+export function _databaseGetAddedChats(roomName, callback) {
   const date = new Date();
   const today = date.getFullYear()+""+("0" + (date.getMonth() + 1)).slice(-2)+""+("0" + date.getDate()).slice(-2);;
   let chatList = [];
   let lastChat = null;
-  const chatRef = query(database_ref(database, 'chats/'+roomName+"/messages/"+today), limitToLast(10));
-  onChildAdded(chatRef, (snapshot) => {
+  const chatRef = database_query(database_ref(database, 'chats/'+roomName+"/messages/"+today), database_limit_to_last(10));
+  database_on_child_added(chatRef, (snapshot) => {
     if(snapshot.val().hasOwnProperty("uid")) {
       callback(snapshot.val());
     }
   });
 }
-
-/*
-export function getChats(roomName, callback) {
-  let chatList = [];
-  const date = new Date();
-  const today = (new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0)).getTime();
-  const chatRef = query(database_ref(database, 'chats/'+roomName), orderByKey(), startAt(today.toString()), limitToLast(10));
-  const chatRef2 = database_ref(database);
-  get(child(chatRef2, 'chats/'+roomName), limitToLast(10)).then((snapshot) => {
-    snapshot.forEach((row) => {
-      chatList.push(row.val());
-    });
-  },[]);
-  callback(chatList);
-}
-*/

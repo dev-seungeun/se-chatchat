@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
   // navigate(path);
   // history.push(path)
 // }
-export function useNotification(title, option) {
+export function _sendNotification(title, option) {
 
   if (!("Notification" in window)) {
     return;

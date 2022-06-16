@@ -1,12 +1,12 @@
 import React, { useReducer, useEffect, useRef  } from 'react';
 import { HashRouter, Routes, Route  } from 'react-router-dom';
-import { authService } from "./services/firebase";
+import { _authStateChagned } from "./helpers/auth";
+import PublicRoute from "./components/PublicRoute";
+import PrivateRoute from "./components/PrivateRoute";
 import Chat from "./pages/Chat";
 import Room from "./pages/Room";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
-import PublicRoute from "./components/PublicRoute";
-import PrivateRoute from "./components/PrivateRoute";
 
 const initialState = {
   authenticated: false,
@@ -27,7 +27,7 @@ function App() {
   const { authenticated } = state;
 
   useEffect(() => {
-    authService.onAuthStateChanged((user) => {
+    _authStateChagned(function(user) {
       if (user) {
         dispatch({
           type: "GET_USER",

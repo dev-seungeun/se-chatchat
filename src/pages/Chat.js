@@ -1,9 +1,10 @@
 import React, { useState, useHistory, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
-import { logout } from "../helpers/auth";
-import { authService, database, database_ref, storage, storage_ref, upload_byte, down_url } from "../services/firebase";
-import { sendChat, sendChatTime, getChats, getAddedChats, offRef, getCommonInfo, setCommonInfo } from "../helpers/database";
-import { useNotification } from "../helpers/useNotification";
+import { _commonGetCommonInfo, _commonSetCommonInfo } from "../helpers/common";
+import { _authLogout, _authGetCurrentUser } from "../helpers/auth";
+import { _storageSendImg, _storageDownloadImg } from "../helpers/storage";
+import { _databaseSendChat, _databaseSendChatTime, _databaseGetAddedChats } from "../helpers/database";
+import { _sendNotification } from "../helpers/useNotification";
 import ChatItem from "../components/ChatItem"
 import "../chat.css";
 
@@ -18,7 +19,7 @@ function Chat() {
   let themeObj = {dark : {theme:"dark", themeBtnValue:"LIGHT"},
                   light: {theme:"light", themeBtnValue:"DARK"}};
   let isMount = true;
-  let chatTemp = [];  
+  let chatTemp = [];
 
   const [showScreen, setShowScreen] = useState(false);
   const [themeInfo, setThemeInfo] = useState(themeObj.light);
@@ -42,9 +43,9 @@ function Chat() {
   };
 
   const notify = (chat) => {
-    if(chat.uid !== authService.currentUser.uid) {
+    if(chat.uid !== _authGetCurrentUser().uid) {
       console.log("NOTI > from chat > "+chat.email);
-      const res = useNotification('SESH', {
+      const res = _sendNotification('SESH', {
         body: chat.email,
         roomName : roomName
       });
@@ -66,10 +67,10 @@ function Chat() {
   const sendMsg = async (msg, imgUrl) => {
     try {
 
-      await sendChat(roomName,
+      await _databaseSendChat(roomName,
       {
-        uid: authService.currentUser.uid,
-        email: authService.currentUser.email,
+        uid: _authGetCurrentUser().uid,
+        email: _authGetCurrentUser().email,
         message: msg,
         imgUrl: imgUrl,
         timestamp: Date.now()
@@ -77,7 +78,7 @@ function Chat() {
         setMsg("");
       });
 
-      sendChatTime(roomName, authService.currentUser.uid);
+      _databaseSendChatTime(roomName, _authGetCurrentUser().uid);
 
     } catch (error) {
       console.log(error);
@@ -87,20 +88,31 @@ function Chat() {
   const sendImg = () => {
     try {
       LoadingWithMask();
-      const fileName = Date.now()+"_"+Math.floor(Math.random() * 100)+".png";
-      const storageRef = storage_ref(storage, getToday()+"/"+roomName+"/images/"+fileName);
-      upload_byte(storageRef, imgFile)
-        .then(
-          (snapshot) => {
-            document.getElementById("input-image").style.display = "none";
-            sendData("image_send_check:"+fileName, src);
-            setSrc("");
-            closeLoadingWithMask();
-          },
-          (error) => {
-            console.log(error);
-          }
-        );
+      _storageSendImg(roomName, imgFile, function(fileName) {
+        console.log(fileName);
+        if(fileName != undefined) {
+          document.getElementById("input-image").style.display = "none";
+          sendData("image_send_check:"+fileName, src);
+          setSrc("");
+        }else {
+          alert("Upload Failed")
+        }
+        closeLoadingWithMask();
+      })
+      // const fileName = Date.now()+"_"+Math.floor(Math.random() * 100)+".png";
+      // const storageRef = storage_ref(storage, getToday()+"/"+roomName+"/images/"+fileName);
+      // upload_byte(storageRef, imgFile)
+      //   .then(
+      //     (snapshot) => {
+      //       document.getElementById("input-image").style.display = "none";
+      //       sendData("image_send_check:"+fileName, src);
+      //       setSrc("");
+      //       closeLoadingWithMask();
+      //     },
+      //     (error) => {
+      //       console.log(error);
+      //     }
+      //   );
     } catch (error) {
       console.log(error);
     }
@@ -110,7 +122,7 @@ function Chat() {
 
   var checkImgCnt = 0;
   var checkImgRstCnt = 0;
-  const getFileUrl = (fileName) => {
+  const downloadImage = (fileName) => {
     checkImgCnt = checkImgCnt + 1;
     if(checkImgCnt != checkImgRstCnt) {
       LoadingWithMask();
@@ -118,38 +130,32 @@ function Chat() {
     const id = "img_id_"+fileName;
     console.log(id);
     console.log(document.getElementById(id));
-    const storageRef = down_url(storage_ref(storage, getToday()+"/"+roomName+"/images/"+fileName))
-      .then((url) => {
-          const xhr = new XMLHttpRequest();
-          xhr.responseType = 'blob';
-          xhr.onload = (event) => {
-            const blob = xhr.response;
-          };
-          xhr.open('GET', url);
-          xhr.send();
-
-          var downloadingImage = new Image();
-          downloadingImage.src = url;
-          downloadingImage.onload = function(){
-            checkImgRstCnt = checkImgRstCnt + 1;
-            document.getElementById(id).src = this.src;
-            document.getElementById(id).style.display = "block";
-            if(checkImgCnt == checkImgRstCnt) {
-              closeLoadingWithMask();
-              scrollToBottom();
-            }
-          };
-        })
-      .catch((error) => {
-      });
-  }
+    _storageDownloadImg(roomName, fileName, function(url) {
+      if(url != undefined) {
+        var downloadingImage = new Image();
+        downloadingImage.src = url;
+        downloadingImage.onload = function(){
+          checkImgRstCnt = checkImgRstCnt + 1;
+          document.getElementById(id).src = this.src;
+          document.getElementById(id).style.display = "block";
+          if(checkImgCnt == checkImgRstCnt) {
+            closeLoadingWithMask();
+            scrollToBottom();
+          }
+        };
+      }else {
+        closeLoadingWithMask();
+        alert("Download Failed")
+      }
+    }
+    })
 */
 
 
 // USE_EFFECT & USE_CALLBACK ---------------------------------------
   useEffect(() => {
-    setThemeInfo(getCommonInfo("themeInfo"));
-    getAddedChats(roomName, setChatUI);
+    setThemeInfo(_commonGetCommonInfo("themeInfo"));
+    _databaseGetAddedChats(roomName, setChatUI);
     document.addEventListener("keydown", escFunction, false);
     setShowScreen(true);
 
@@ -174,7 +180,7 @@ function Chat() {
 
   const handleLogOut = async () => {
     try {
-      await logout();
+      await _commonGetCommonInfo();
     } catch (error) {
      console.log(error);
     }
@@ -193,7 +199,7 @@ function Chat() {
   }
 
   const handleTheme = (e) => {
-    setCommonInfo("themeInfo", themeInfo.theme == "light" ? themeObj.dark : themeObj.light)
+    _commonSetCommonInfo("themeInfo", themeInfo.theme == "light" ? themeObj.dark : themeObj.light)
     setThemeInfo(themeInfo.theme == "light" ? themeObj.dark : themeObj.light);
     scrollToBottom();
   }
@@ -271,17 +277,24 @@ function Chat() {
 
   const LoadingWithMask = () => {    
     document.getElementById("loadingMask").style.display = "block";  
-    document.getElementById("loadingImg").style.display = "block";
   };
 
   const closeLoadingWithMask = () => {    
     document.getElementById('loadingMask').style.display = "none";
-    document.getElementById('loadingImg').style.display = "none";
   };
 
   const openImageModal = (e) => {
     document.getElementById("modal").style.display = "block";
-    const imgSrc = document.getElementById(e.currentTarget.id).src;
+    let imgSrc;
+    if(themeInfo.theme == "light") {
+      imgSrc = document.getElementById(e.currentTarget.id).src;
+    }else {
+    console.log(document.getElementById(e.currentTarget.id));
+    console.log(document.getElementById(e.currentTarget.id).firstChild);
+      imgSrc = document.getElementById(e.currentTarget.id).firstChild.innerHTML;
+      console.log(imgSrc);
+    }
+    console.log(imgSrc);
     document.getElementById("modalBoxImg").src = imgSrc;
   };
 
@@ -351,6 +364,7 @@ function Chat() {
 
       // loading
       <div id="loadingMask">
+        <div></div>
         <img id="loadingImg" src={process.env.PUBLIC_URL+'/loader.gif'} />
       </div>
 
@@ -363,9 +377,6 @@ function Chat() {
     </div>
   );
 
-  // $(document).ready(function(){     
-  //   $(".msg_img").on("click", openImageModal);
-  // });
 }
 
 export default Chat;

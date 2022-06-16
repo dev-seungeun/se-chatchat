@@ -16,13 +16,14 @@ html, body { overflow: hidden; }
 .chat_wrap .logout { position: fixed;	background: var(--main-background-color);	color: var(--main-color);	border: none;	right: 5px;	font-size:10px;	width: 55px;	height: 20px; }
 .chat_wrap .mode {	position: fixed;	background: var(--main-background-color);	color: var(--main-color);	border: none;	right:70px;	font-size:10px;	width: 45px;	height: 20px; }
 .modal { display: none; z-index: 500;	width: 100%; height: 100%; position: fixed; top: 0; left: 0; background-color: rgba(0, 0, 0, 0.3); }
-.modal button {	position: absolute;	top: 5%;	right: 5%;	background: transparent; border: 0; color: white; font-size: 3rem; cursor: pointer; }
+.modal button {	z-index: 20; position: absolute;	top: 5%;	right: 5%;	background: transparent; border: 0; color: white; font-size: 3rem; cursor: pointer; }
 .modalBox {	position: relative;	top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%;	text-align: center; }
 .modalBox img {	width: 100%; }
 .modalBox p {	color: #ffffff;	background-color: #000;	font-size: 2rem;	padding: .2rem; }
 #file_input { display: none; }
-#loadingMask { display: none; position:absolute; z-index:100; background-color:#000000; left:0; top:0; width: 100%; height: 100%; opacity: 0.3; }
-#loadingImg { display: none; position: absolute; width:70px; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 200;}
+#loadingMask { display: none }
+#loadingMask div { position:absolute; z-index:100; background-color:#000000; left:0; top:0; width: 100%; height: 100%; opacity: 0.3; }
+#loadingImg { position: absolute; width:70px; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; }
 
 
 /* BASIC */
@@ -81,7 +82,8 @@ html, body { overflow: hidden; }
 .chat_wrap[data-theme="dark"] .chat ul li > div.time { color: darkgray; float: left; padding-right: 5px; }
 .chat_wrap[data-theme="dark"] .chat ul li > div.sender { color: darkgray; float: left; padding-right: 5px; }
 .chat_wrap[data-theme="dark"] .chat ul li > div.message { word-break:break-all; color: var(--main-color); }
-.chat_wrap[data-theme="dark"] .chat ul li > div.message img.msg_img { width: 50px; margin: 3px 0; cursor: pointer; }
+.chat_wrap[data-theme="dark"] .chat ul li > div.message span.msg_img { cursor: pointer; }
+.chat_wrap[data-theme="dark"] .chat ul li > div.message span.msg_img_span { display: none; }
 .chat_wrap[data-theme="dark"] .send { display: none; }
 .chat_wrap[data-theme="dark"] .image-upload img { display: none; }
 .chat_wrap[data-theme="dark"] #image_upload span {

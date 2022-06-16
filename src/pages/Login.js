@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { signIn, signInWithGoogle } from "../helpers/auth";
+import { _authSignIn, _authSignInWithGoogle } from "../helpers/auth";
 import "../login.css"
 
 function Login() {
@@ -20,7 +20,7 @@ function Login() {
     e.preventDefault();
     if (email !== "" && password !== "") {
       try {
-        await signIn(email, password).then((res) => console.log(res));
+        await _authSignIn(email, password).then((res) => console.log(res));
       } catch (err) {
         if(err.code.includes("wrong-password")) {
           alert("비밀번호를 확인해주세요.");
@@ -35,7 +35,7 @@ function Login() {
 
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithGoogle();
+      await _authSignInWithGoogle();
     } catch (error) {
      console.log(error);
     }

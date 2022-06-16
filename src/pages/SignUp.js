@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { signUp } from "../helpers/auth";
+import { _authSignUp } from "../helpers/auth";
 import "../signup.css"
 
 function SignUp() {
@@ -20,7 +20,7 @@ function SignUp() {
     e.preventDefault();
     if(email !== "" && password !== "") {
       try {
-        await signUp(email, password);
+        await _authSignUp(email, password);
       }catch(error) {
         alert(error.code);
       }
