@@ -1,5 +1,5 @@
 import React, { useState, useHistory, useEffect, useRef, useCallback } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { _commonGetCommonInfo, _commonSetCommonInfo } from "../helpers/common";
 import { _authLogout, _authGetCurrentUser } from "../helpers/auth";
 import { _storageSendImg, _storageDownloadImg } from "../helpers/storage";
@@ -20,6 +20,7 @@ function Chat() {
                   light: {theme:"light", themeBtnValue:"DARK"}};
   let isMount = true;
   let chatTemp = [];
+  let navigate = useNavigate();
 
   const [showScreen, setShowScreen] = useState(false);
   const [themeInfo, setThemeInfo] = useState(themeObj.light);
@@ -48,6 +49,13 @@ function Chat() {
       const res = _sendNotification('SESH', {
         body: chat.email,
         roomName : roomName
+      },function(enterRoomName) {
+        if(roomName != enterRoomName) {
+          // TODO
+          // console.log("["+enterRoomName+"] 입장")
+          // _commonSetCommonInfo("selectedRoom", enterRoomName);
+          // navigate(`/chat?room=${enterRoomName}`);
+        }
       });
       // console.log(res);
       // useNotification(chat.email, {
@@ -78,7 +86,7 @@ function Chat() {
         setMsg("");
       });
 
-      _databaseSendChatTime(roomName, _authGetCurrentUser().uid);
+      _databaseSendChatTime(roomName, _authGetCurrentUser());
 
     } catch (error) {
       console.log(error);

@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
   // navigate(path);
   // history.push(path)
 // }
-export function _sendNotification(title, option) {
+export function _sendNotification(title, option, callback) {
 
   if (!("Notification" in window)) {
     return;
@@ -34,9 +34,10 @@ export function _sendNotification(title, option) {
     // self.addEventListener('notificationclick', function(event) {
     notification.onclick = function(event) {
       event.preventDefault();
+      console.log("focus!!");
       window.focus();
-      console.log(option.roomName);
-      const path = "http://localhost:3000/#/chat?room="+option.roomName;
+      // const path = "http://localhost:3000/#/chat?room="+option.roomName;
+      callback(option.roomName);
       // routeChange(path)
       // document.location.href = path;
       // return path;

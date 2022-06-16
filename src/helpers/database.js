@@ -22,10 +22,11 @@ export function _databaseGetRoomsAuth(roomName, callback) {
   });
 }
 
-export function _databaseSendChatTime(roomName, uid) {
+export function _databaseSendChatTime(roomName, currentUser) {
   return database_update(database_ref(database, 'chats/rooms/'+roomName), {
     date: Date.now()+1000,
-    uid : uid
+    uid : currentUser.uid,
+    email: currentUser.email
   });
 }
 

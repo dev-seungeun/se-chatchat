@@ -72,6 +72,10 @@ function Room() {
       const res = _sendNotification('SESH', {
         body: chat.email,
         roomName : roomName
+      },function(enterRoomName) {
+        console.log("["+enterRoomName+"] 입장")
+        _commonSetCommonInfo("selectedRoom", enterRoomName);
+        navigate(`/chat?room=${enterRoomName}`);
       });
       // console.log(res)
     }
