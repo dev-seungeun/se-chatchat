@@ -62,7 +62,7 @@ function App() {
         />
 
         <Route
-          path="/chat"
+          path="/chat/:roomName"
           element={<PrivateRoute authenticated={authenticated} component={Chat} />}
         />
 

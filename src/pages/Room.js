@@ -13,7 +13,6 @@ function Room() {
   let isMount = true;
   let selectedRoom = "";
   let checkRooms = {};
-  let notiRoomName = "";
 
   const getRoomList = async() => {
 
@@ -55,8 +54,7 @@ function Room() {
           const selectedRoom = _commonGetCommonInfo("selectedRoom");
           if(chatInfo.date > Date.now()
                 && (isMount || (!isMount && selectedRoom != roomName))) {
-            notify(roomName, chatInfo);
-            notiRoomName = roomName;
+            notify(roomName, chatInfo, isMount ? false : true);
           }
         }
       })
@@ -66,16 +64,16 @@ function Room() {
 
   };
 
-  const notify = (roomName, chat) => {
+  const notify = (roomName, chat, replace) => {
     if(chat.uid !== _authGetCurrentUser().uid) {
-      console.log("NOTI > from wating-room")
+      console.log("NOTI > from wating room")
       const res = _sendNotification('SESH', {
         body: chat.email,
         roomName : roomName
       },function(enterRoomName) {
         console.log("["+enterRoomName+"] 입장")
         _commonSetCommonInfo("selectedRoom", enterRoomName);
-        navigate(`/chat?room=${enterRoomName}`);
+        navigate(`/chat/${enterRoomName}`, {replace: replace});
       });
       // console.log(res)
     }
@@ -103,7 +101,7 @@ function Room() {
         if(Object.keys(res).includes(_authGetCurrentUser().uid)) {
           console.log("["+roomName+"] 입장")
           _commonSetCommonInfo("selectedRoom", roomName);
-          navigate(`/chat?room=${roomName}`);
+          navigate(`/chat/${roomName}`);
         }else {
           alert("'"+roomName+"' 방 입장권한이 없습니다.")
         }

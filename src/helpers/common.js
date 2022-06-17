@@ -1,4 +1,8 @@
-const info = {roomsInfo: false, selectedRoom: "", themeInfo: {theme:"light", themeBtnValue:"DARK"}};
+const info = {roomsInfo: false,
+              selectedRoom: "",
+              themeInfo: {},
+              theme_dark : {theme:"dark", themeBtnValue:"LIGHT"},
+              theme_light: {theme:"light", themeBtnValue:"DARK"}};
 
 export function _commonGetCommonInfo(key) {
     return info[key];

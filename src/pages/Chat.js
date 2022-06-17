@@ -1,5 +1,5 @@
 import React, { useState, useHistory, useEffect, useRef, useCallback } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { _commonGetCommonInfo, _commonSetCommonInfo } from "../helpers/common";
 import { _authLogout, _authGetCurrentUser } from "../helpers/auth";
 import { _storageSendImg, _storageDownloadImg } from "../helpers/storage";
@@ -8,22 +8,14 @@ import { _sendNotification } from "../helpers/useNotification";
 import ChatItem from "../components/ChatItem"
 import "../chat.css";
 
-function useQuery() {
-  const { search } = useLocation();
-  const query = React.useMemo(() => new URLSearchParams(search), [search]);
-  return query;
-}
-
 function Chat() {
 
-  let themeObj = {dark : {theme:"dark", themeBtnValue:"LIGHT"},
-                  light: {theme:"light", themeBtnValue:"DARK"}};
   let isMount = true;
   let chatTemp = [];
   let navigate = useNavigate();
-
+  const roomName = useParams().roomName;
   const [showScreen, setShowScreen] = useState(false);
-  const [themeInfo, setThemeInfo] = useState(themeObj.light);
+  const [themeInfo, setThemeInfo] = useState(_commonGetCommonInfo('theme_light'));
   const [msg, setMsg] = useState("");
   const [chatList, setChatList] = useState([]);
   const [src, setSrc] = useState("");
@@ -45,22 +37,12 @@ function Chat() {
 
   const notify = (chat) => {
     if(chat.uid !== _authGetCurrentUser().uid) {
-      console.log("NOTI > from chat > "+chat.email);
+      console.log("NOTI > from this room > "+chat.email);
       const res = _sendNotification('SESH', {
         body: chat.email,
         roomName : roomName
-      },function(enterRoomName) {
-        if(roomName != enterRoomName) {
-          // TODO
-          // console.log("["+enterRoomName+"] 입장")
-          // _commonSetCommonInfo("selectedRoom", enterRoomName);
-          // navigate(`/chat?room=${enterRoomName}`);
-        }
+      }, function(enterRoomName){
       });
-      // console.log(res);
-      // useNotification(chat.email, {
-      //   body: `${chat.message}`
-      // });
     }
   }
 
@@ -97,7 +79,6 @@ function Chat() {
     try {
       LoadingWithMask();
       _storageSendImg(roomName, imgFile, function(fileName) {
-        console.log(fileName);
         if(fileName != undefined) {
           document.getElementById("input-image").style.display = "none";
           sendData("image_send_check:"+fileName, src);
@@ -107,20 +88,6 @@ function Chat() {
         }
         closeLoadingWithMask();
       })
-      // const fileName = Date.now()+"_"+Math.floor(Math.random() * 100)+".png";
-      // const storageRef = storage_ref(storage, getToday()+"/"+roomName+"/images/"+fileName);
-      // upload_byte(storageRef, imgFile)
-      //   .then(
-      //     (snapshot) => {
-      //       document.getElementById("input-image").style.display = "none";
-      //       sendData("image_send_check:"+fileName, src);
-      //       setSrc("");
-      //       closeLoadingWithMask();
-      //     },
-      //     (error) => {
-      //       console.log(error);
-      //     }
-      //   );
     } catch (error) {
       console.log(error);
     }
@@ -162,7 +129,7 @@ function Chat() {
 
 // USE_EFFECT & USE_CALLBACK ---------------------------------------
   useEffect(() => {
-    setThemeInfo(_commonGetCommonInfo("themeInfo"));
+    _commonSetCommonInfo("themeInfo", _commonGetCommonInfo("theme_light"));
     _databaseGetAddedChats(roomName, setChatUI);
     document.addEventListener("keydown", escFunction, false);
     setShowScreen(true);
@@ -171,7 +138,7 @@ function Chat() {
       isMount = false;
       document.removeEventListener("keydown", escFunction, false);
     }
-  }, []);
+  }, [roomName]);
 
   const escFunction = useCallback((event) => {
     if(event.keyCode === 27) {
@@ -207,8 +174,8 @@ function Chat() {
   }
 
   const handleTheme = (e) => {
-    _commonSetCommonInfo("themeInfo", themeInfo.theme == "light" ? themeObj.dark : themeObj.light)
-    setThemeInfo(themeInfo.theme == "light" ? themeObj.dark : themeObj.light);
+    _commonSetCommonInfo("themeInfo", _commonGetCommonInfo("themeInfo").theme == "dark" ? _commonGetCommonInfo('theme_light') : _commonGetCommonInfo('theme_dark'))
+    setThemeInfo(_commonGetCommonInfo("themeInfo"));
     scrollToBottom();
   }
 
@@ -267,9 +234,6 @@ function Chat() {
   }
 
 // ETC ----------------------------------------------
-  let query = useQuery();
-  const roomName = query.get("room");
-
   const messageRef = useRef();
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -294,15 +258,12 @@ function Chat() {
   const openImageModal = (e) => {
     document.getElementById("modal").style.display = "block";
     let imgSrc;
+
     if(themeInfo.theme == "light") {
       imgSrc = document.getElementById(e.currentTarget.id).src;
     }else {
-    console.log(document.getElementById(e.currentTarget.id));
-    console.log(document.getElementById(e.currentTarget.id).firstChild);
       imgSrc = document.getElementById(e.currentTarget.id).firstChild.innerHTML;
-      console.log(imgSrc);
     }
-    console.log(imgSrc);
     document.getElementById("modalBoxImg").src = imgSrc;
   };
 
@@ -310,7 +271,6 @@ function Chat() {
     document.getElementById("modal").style.display = "none";
   };
 // --------------------------------------------------
-
 
   return (
     showScreen &&
