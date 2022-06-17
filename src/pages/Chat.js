@@ -1,9 +1,9 @@
 import React, { useState, useHistory, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { _commonGetCommonInfo, _commonSetCommonInfo } from "../helpers/common";
+import { _commonGetCommonInfo, _commonSetCommonInfo, _commonHandleUserTheme } from "../helpers/common";
 import { _authLogout, _authGetCurrentUser } from "../helpers/auth";
 import { _storageSendImg, _storageDownloadImg } from "../helpers/storage";
-import { _databaseSendChat, _databaseSendChatTime, _databaseGetAddedChats } from "../helpers/database";
+import { _databaseSendChat, _databaseUpdateChatTime, _databaseGetAddedChats, _databaseUpdateUserProfile } from "../helpers/database";
 import { _sendNotification } from "../helpers/useNotification";
 import ChatItem from "../components/ChatItem"
 import "../chat.css";
@@ -15,7 +15,7 @@ function Chat() {
   let navigate = useNavigate();
   const roomName = useParams().roomName;
   const [showScreen, setShowScreen] = useState(false);
-  const [themeInfo, setThemeInfo] = useState(_commonGetCommonInfo("themeInfo"));
+  const [themeInfo, setThemeInfo] = useState({});
   const [msg, setMsg] = useState("");
   const [chatList, setChatList] = useState([]);
   const [src, setSrc] = useState("");
@@ -68,7 +68,7 @@ function Chat() {
         setMsg("");
       });
 
-      _databaseSendChatTime(roomName, _authGetCurrentUser());
+      _databaseUpdateChatTime(roomName, _authGetCurrentUser());
 
     } catch (error) {
       console.log(error);
@@ -129,9 +129,11 @@ function Chat() {
 
 // USE_EFFECT & USE_CALLBACK ---------------------------------------
   useEffect(() => {
-    _databaseGetAddedChats(roomName, setChatUI);
-    document.addEventListener("keydown", escFunction, false);
-    setShowScreen(true);
+    handleTheme(null, true, function() {
+      _databaseGetAddedChats(roomName, setChatUI);
+      document.addEventListener("keydown", escFunction, false);
+      setShowScreen(true);
+    });
 
     return() => {
       isMount = false;
@@ -154,7 +156,7 @@ function Chat() {
 
   const handleLogOut = async () => {
     try {
-      await _commonGetCommonInfo();
+      await _authLogout();
     } catch (error) {
      console.log(error);
     }
@@ -172,10 +174,12 @@ function Chat() {
     }
   }
 
-  const handleTheme = (e) => {
-    _commonSetCommonInfo("themeInfo", _commonGetCommonInfo("themeInfo").theme == "dark" ? _commonGetCommonInfo("theme_light") : _commonGetCommonInfo("theme_dark"))
-    setThemeInfo(_commonGetCommonInfo("themeInfo"));
-    scrollToBottom();
+  const handleTheme = (e, isInit, callback) => {
+    !isInit && _databaseUpdateUserProfile("theme", themeInfo.theme == "dark" ? "light" : "dark", _authGetCurrentUser());
+    _commonHandleUserTheme(function(userThemeObj) {
+      setThemeInfo(userThemeObj);
+      callback && callback();
+    })
   }
 
   const handleOnPaste = (e) => {
@@ -235,6 +239,7 @@ function Chat() {
 // ETC ----------------------------------------------
   const messageRef = useRef();
   const scrollToBottom = () => {
+    if(!messageRef.current) return;
     setTimeout(() => {
       messageRef.current.scrollIntoView({ behavior: "smooth", block: "end" })
     }, 200);

@@ -1,9 +1,23 @@
-const info = {roomsInfo: false,
-              selectedRoom: "",
-              themeInfo: {theme:"light", themeBtnValue:"DARK"},
+import { _databaseGetUserProfile, _databaseUpdateUserProfile  } from "../helpers/database";
+import { _authGetCurrentUser } from "../helpers/auth";
+
+const info = {selectedRoom: "",
+              themeInfo: {},
               theme_dark : {theme:"dark", themeBtnValue:"LIGHT"},
               theme_light: {theme:"light", themeBtnValue:"DARK"}};
 
+export function _commonHandleUserTheme(callback) {
+  _databaseGetUserProfile(_authGetCurrentUser(), function(profile) {
+    let theme = "light";
+    if(!profile) {
+      _databaseUpdateUserProfile("theme", theme, _authGetCurrentUser());
+    }else {
+      theme = profile.theme;
+    }
+    info.themeInfo = info["theme_"+theme];
+    callback(info.themeInfo);
+  });
+}
 export function _commonGetCommonInfo(key) {
     return info[key];
 }

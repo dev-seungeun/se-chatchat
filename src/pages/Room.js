@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { _commonGetCommonInfo, _commonSetCommonInfo } from "../helpers/common";
-import { _databaseGetRoomsInfo, _databaseGetRoomsAuth } from "../helpers/database";
+import { _databaseGetRoomList, _databaseGetChatTime } from "../helpers/database";
 import { _authLogout, _authGetCurrentUser } from "../helpers/auth";
 import { _sendNotification } from "../helpers/useNotification";
 import "../rooms.css"
@@ -16,51 +16,38 @@ function Room() {
 
   const getRoomList = async() => {
 
-    const callback = (rooms) => {
+    _databaseGetRoomList(function(roomNameList) {
+      if(roomNameList.length == 0) {
+        alert("모든 방에 권한이 없습니다.\n관리자에게 문의해주세요.");
+        _authLogout();
+      }else {
+        const myList = () => {
+          const list = roomNameList.map((roomName, index) => (
+            <li key={createItem(index+"li")}>
+              <button
+                key={createItem(index+"room")}
+                className = "room"
+                type="button"
+                onClick={handleSelectRoom}
+                value={roomName}>
+                <span>{roomName}</span>
+              </button>
+            </li>
+          ));
+          return <ul>{list}</ul>;
+        };
 
-      Object.keys(rooms).forEach((roomName, index) => (
-        _databaseGetRoomsAuth(roomName, function(res) {
-          if(Object.keys(res).includes(_authGetCurrentUser().uid)) {
-            checkRooms[roomName] = rooms[roomName]
-          }
+        setRoomList(myList);
+      }
+    });
 
-          if(index+1 == Object.keys(rooms).length) {
-            const myList = () => {
-              const list = Object.keys(checkRooms).map((roomName, index) => (
-                <li key={createItem(index+"li")}>
-                  <button
-                    key={createItem(index+"room")}
-                    className = "room"
-                    type="button"
-                    onClick={handleSelectRoom}
-                    value={roomName}>
-                    <span>{roomName}</span>
-                  </button>
-                </li>
-              ));
-              return <ul>{list}</ul>;
-            };
-
-            setRoomList(myList);
-          }
-        })
-      ));
-
-    }
-
-    const notiCallback = (roomName, chatInfo) => {
-      _databaseGetRoomsAuth(roomName, function(res) {
-        if(Object.keys(res).includes(_authGetCurrentUser().uid)) {
-          const selectedRoom = _commonGetCommonInfo("selectedRoom");
-          if(chatInfo.date > Date.now()
-                && (isMount || (!isMount && selectedRoom != roomName))) {
-            notify(roomName, chatInfo, isMount ? false : true);
-          }
-        }
-      })
-    }
-
-    _databaseGetRoomsInfo(callback, notiCallback);
+    _databaseGetChatTime(function(roomName, chatInfo) {
+      const selectedRoom = _commonGetCommonInfo("selectedRoom");
+      if(chatInfo.date > Date.now()
+            && (isMount || (!isMount && selectedRoom != roomName))) {
+        notify(roomName, chatInfo, !isMount && selectedRoom ? true : false);
+      }
+    });
 
   };
 
@@ -75,7 +62,6 @@ function Room() {
         _commonSetCommonInfo("selectedRoom", enterRoomName);
         navigate(`/chat/${enterRoomName}`, {replace: replace});
       });
-      // console.log(res)
     }
   }
 
@@ -97,21 +83,15 @@ function Room() {
     if(roomName == undefined || roomName == "undefined") {
       alert("방을 다시 선택해주세요");
     }else {
-      _databaseGetRoomsAuth(roomName, function(res) {
-        if(Object.keys(res).includes(_authGetCurrentUser().uid)) {
-          console.log("["+roomName+"] 입장")
-          _commonSetCommonInfo("selectedRoom", roomName);
-          navigate(`/chat/${roomName}`);
-        }else {
-          alert("'"+roomName+"' 방 입장권한이 없습니다.")
-        }
-      })
+      console.log("["+roomName+"] 입장")
+      _commonSetCommonInfo("selectedRoom", roomName);
+      navigate(`/chat/${roomName}`);
     }
   };
 
   const handleGoogleLogOut = async () => {
     try {
-      await logout();
+      await _authLogout();
     } catch (error) {
      console.log(error);
     }
