@@ -18,11 +18,11 @@ export function _storageDownloadImg(roomName, fileName, callback) {
   const storageRef = storage_download_url(storage_ref(storage, _commonGetToday()+"/"+roomName+"/images/"+fileName))
     .then((url) => {
       const xhr = new XMLHttpRequest();
-      xhr.responseType = 'blob';
+      xhr.responseType = "blob";
       xhr.onload = (event) => {
         const blob = xhr.response;
       };
-      xhr.open('GET', url);
+      xhr.open("GET", url);
       xhr.send();
       callback(url);
     })

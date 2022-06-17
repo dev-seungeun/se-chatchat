@@ -1,5 +1,5 @@
-import React, { useReducer, useEffect, useRef  } from 'react';
-import { HashRouter, Routes, Route  } from 'react-router-dom';
+import React, { useReducer, useEffect, useRef  } from "react";
+import { HashRouter, Routes, Route  } from "react-router-dom";
 import { _authStateChagned } from "./helpers/auth";
 import PublicRoute from "./components/PublicRoute";
 import PrivateRoute from "./components/PrivateRoute";

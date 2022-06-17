@@ -15,7 +15,7 @@ function Chat() {
   let navigate = useNavigate();
   const roomName = useParams().roomName;
   const [showScreen, setShowScreen] = useState(false);
-  const [themeInfo, setThemeInfo] = useState(_commonGetCommonInfo('theme_light'));
+  const [themeInfo, setThemeInfo] = useState(_commonGetCommonInfo("theme_light"));
   const [msg, setMsg] = useState("");
   const [chatList, setChatList] = useState([]);
   const [src, setSrc] = useState("");
@@ -38,7 +38,7 @@ function Chat() {
   const notify = (chat) => {
     if(chat.uid !== _authGetCurrentUser().uid) {
       console.log("NOTI > from this room > "+chat.email);
-      const res = _sendNotification('SESH', {
+      const res = _sendNotification("SESH", {
         body: chat.email,
         roomName : roomName
       }, function(enterRoomName){
@@ -166,7 +166,7 @@ function Chat() {
   };
 
   const handleKeyPress = async(e) => {
-    if(e.key == 'Enter') {
+    if(e.key == "Enter") {
       if(!e.shiftKey) {
         sendData(msg);
       }
@@ -174,7 +174,7 @@ function Chat() {
   }
 
   const handleTheme = (e) => {
-    _commonSetCommonInfo("themeInfo", _commonGetCommonInfo("themeInfo").theme == "dark" ? _commonGetCommonInfo('theme_light') : _commonGetCommonInfo('theme_dark'))
+    _commonSetCommonInfo("themeInfo", _commonGetCommonInfo("themeInfo").theme == "dark" ? _commonGetCommonInfo("theme_light") : _commonGetCommonInfo("theme_dark"))
     setThemeInfo(_commonGetCommonInfo("themeInfo"));
     scrollToBottom();
   }
@@ -215,7 +215,7 @@ function Chat() {
             document.getElementById("input-image").style.display = "block";
 
            // Base64 to File
-            var arr = base64Str.split(','),
+            var arr = base64Str.split(","),
                 mime = arr[0].match(/:(.*?);/)[1],
                 bstr = atob(arr[1]),
                 n = bstr.length,
@@ -237,7 +237,7 @@ function Chat() {
   const messageRef = useRef();
   const scrollToBottom = () => {
     setTimeout(() => {
-      messageRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
+      messageRef.current.scrollIntoView({ behavior: "smooth", block: "end" })
     }, 200);
   }
 
@@ -252,7 +252,7 @@ function Chat() {
   };
 
   const closeLoadingWithMask = () => {    
-    document.getElementById('loadingMask').style.display = "none";
+    document.getElementById("loadingMask").style.display = "none";
   };
 
   const openImageModal = (e) => {
@@ -333,7 +333,7 @@ function Chat() {
       // loading
       <div id="loadingMask">
         <div></div>
-        <img id="loadingImg" src={process.env.PUBLIC_URL+'/loader.gif'} />
+        <img id="loadingImg" src={process.env.PUBLIC_URL+"/loader.gif"} />
       </div>
 
     	<div id="modal" className="modal" onClick={closeImageModal}>
