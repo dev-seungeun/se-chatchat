@@ -13,6 +13,7 @@ function Chat() {
   let isMount = true;
   let chatTemp = [];
   let navigate = useNavigate();
+  const messageRef = useRef();
   const roomName = useParams().roomName;
   const [showScreen, setShowScreen] = useState(false);
   const [themeInfo, setThemeInfo] = useState({});
@@ -178,6 +179,7 @@ function Chat() {
     !isInit && _databaseUpdateUserProfile("theme", themeInfo.theme == "dark" ? "light" : "dark", _authGetCurrentUser());
     _commonHandleUserTheme(function(userThemeObj) {
       setThemeInfo(userThemeObj);
+      scrollToBottom();
       callback && callback();
     })
   }
@@ -237,7 +239,6 @@ function Chat() {
   }
 
 // ETC ----------------------------------------------
-  const messageRef = useRef();
   const scrollToBottom = () => {
     if(!messageRef.current) return;
     setTimeout(() => {
