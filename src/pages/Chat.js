@@ -32,7 +32,7 @@ function Chat() {
       notify(dbChatObj);
     }
 
-    isMount && scrollToBottom();
+    isMount && scrollToBottom(0);
 
   };
 
@@ -142,6 +142,10 @@ function Chat() {
     }
   }, [roomName]);
 
+  useEffect(() => {
+    scrollToBottom(0);
+  }, [showScreen]);
+
   const escFunction = useCallback((event) => {
     if(event.keyCode === 27) {
       setSrc("");
@@ -179,7 +183,7 @@ function Chat() {
     !isInit && _databaseUpdateUserProfile("theme", themeInfo.theme == "dark" ? "light" : "dark", _authGetCurrentUser());
     _commonHandleUserTheme(function(userThemeObj) {
       setThemeInfo(userThemeObj);
-      scrollToBottom();
+      scrollToBottom(0);
       callback && callback();
     })
   }
@@ -239,11 +243,11 @@ function Chat() {
   }
 
 // ETC ----------------------------------------------
-  const scrollToBottom = () => {
+  const scrollToBottom = (msTime) => {
     if(!messageRef.current) return;
     setTimeout(() => {
       messageRef.current.scrollIntoView({ behavior: "smooth", block: "end" })
-    }, 200);
+    }, msTime);
   }
 
   const getToday = () => {
