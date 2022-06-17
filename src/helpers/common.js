@@ -1,6 +1,6 @@
 const info = {roomsInfo: false,
               selectedRoom: "",
-              themeInfo: {},
+              themeInfo: {theme:"light", themeBtnValue:"DARK"},
               theme_dark : {theme:"dark", themeBtnValue:"LIGHT"},
               theme_light: {theme:"light", themeBtnValue:"DARK"}};
 

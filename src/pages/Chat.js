@@ -15,7 +15,7 @@ function Chat() {
   let navigate = useNavigate();
   const roomName = useParams().roomName;
   const [showScreen, setShowScreen] = useState(false);
-  const [themeInfo, setThemeInfo] = useState(_commonGetCommonInfo("theme_light"));
+  const [themeInfo, setThemeInfo] = useState(_commonGetCommonInfo("themeInfo"));
   const [msg, setMsg] = useState("");
   const [chatList, setChatList] = useState([]);
   const [src, setSrc] = useState("");
@@ -129,7 +129,6 @@ function Chat() {
 
 // USE_EFFECT & USE_CALLBACK ---------------------------------------
   useEffect(() => {
-    _commonSetCommonInfo("themeInfo", _commonGetCommonInfo("theme_light"));
     _databaseGetAddedChats(roomName, setChatUI);
     document.addEventListener("keydown", escFunction, false);
     setShowScreen(true);
