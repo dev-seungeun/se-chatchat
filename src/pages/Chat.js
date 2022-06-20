@@ -18,8 +18,8 @@ function Chat() {
   const [showScreen, setShowScreen] = useState(false);
   const [themeInfo, setThemeInfo] = useState({});
   const [msg, setMsg] = useState("");
-  const [reply, setReply] = useState();
-  const [replyInfo, setReplyInfo] = useState();
+  const [reply, setReply] = useState(null);
+  const [replyInfo, setReplyInfo] = useState(null);
   const [chatList, setChatList] = useState([]);
   const [src, setSrc] = useState("");
   const [imgFile, setImgFile] = useState();
@@ -213,7 +213,9 @@ function Chat() {
         setReplyInfo(null);
       }
     }
-    document.getElementById("rmenu") && document.getElementById("rmenu").className = "right_btn_hide";
+    if(document.getElementById("rmenu")) {
+      document.getElementById("rmenu").className = "right_btn_hide";
+    }
   }
 
   const handleRightMenu = (e) => {
