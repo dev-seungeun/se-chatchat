@@ -26,7 +26,7 @@ function getChateItem(props) {
              <div className="time"><span>{_commonTimestampToDate(props.chat.timestamp)}</span></div>
              <div className="sender"><span>{props.chat.email}</span></div>
              <div className="message" id={props.chat.timestamp} onContextMenu={(e)=>props.handleMsgRightClick(e, props.chat)}>
-                { props.chat.reply && <span className="msg_reply" onClick={(e)=>props.goToReplyMsg(e, props.chat.reply.split("-")[1])}>{props.chat.reply.split("-")[0]+"님에게 답장"}<br/><span>{"["+props.chat.reply.split("-")[2]+"]"}</span><br/></span> }
+                { props.chat.reply && <span className="msg_reply" onClick={(e)=>props.goToReplyMsg(e, props.chat.reply.split("-")[1])}>{props.chat.reply.split("-")[0]+"님에게 답장"}<br/>{"["+props.chat.reply.split("-")[2]+"]"}<br/></span> }
                 { props.chat.message.includes("image_send_check")
                       ? <img className="msg_img" id={"img_id_"+props.chat.message.split(":")[1]} onClick={props.openImageModal} src={props.chat.imgUrl} />
                       : props.chat.message.includes("\n")

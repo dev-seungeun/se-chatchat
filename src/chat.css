@@ -5,8 +5,8 @@
 
 html, body { overflow: hidden; }
 a { color: var(--main-color) }
-.right_btn_show { z-index: 1000; position: absolute; background-color: white; border: 1px solid black; font-size: 10px; padding: 2px 4px; display: block; margin: 0; list-style-type: none; list-style: none; cursor: pointer; }
-.right_btn_hide { display: none; }
+.right_btn_hide, .hide { display: none; }
+.right_btn_show { z-index: 1000; position: absolute; background-color: white; border: 1px solid black; font-size: 10px; padding: 2px 4px; display: block; margin: 0; list-style-type: none; list-style: none; border-radius: 4px; cursor: pointer; }
 .right_btn_show li { list-style: none; }
 .right_btn_show a { border: 0 !important; text-decoration: none; }
 .right_btn_show a:hover { text-decoration: underline !important; }
@@ -22,6 +22,8 @@ a { color: var(--main-color) }
 .chat_wrap .selected_msg a { color: #FF5E00 !important; }
 .chat_wrap .reply-email { color: #D1B2FF; font-size: 11px; }
 .chat_wrap .reply-msg { color: #BDBDBD; font-size: 10px; }
+.chat_wrap #back_reply { position: fixed; bottom: var(--main-bottom); margin-bottom: 10px; font-size: 10px; text-align: center; width: 100%; cursor: pointer; }
+.chat_wrap #back_reply > span { color: var(--main-background-color); background-color: var(--main-color); padding: 3px 7px; border-radius: 4px; }
 .chat_wrap .input-image { display: none; position:fixed; bottom: var(--main-bottom); right: 10px; margin-bottom: 5px; width:150px }
 .chat_wrap .logout { position: fixed;	background: var(--main-background-color);	color: var(--main-color);	border: none;	right: 5px;	font-size:10px;	width: 55px;	height: 20px; }
 .chat_wrap .mode {	position: fixed;	background: var(--main-background-color);	color: var(--main-color);	border: none;	right:70px;	font-size:10px;	width: 45px;	height: 20px; }

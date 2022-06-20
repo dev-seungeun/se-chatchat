@@ -20,6 +20,7 @@ function Chat() {
   const [msg, setMsg] = useState("");
   const [reply, setReply] = useState(null);
   const [replyInfo, setReplyInfo] = useState(null);
+  const [backId, setBackId] = useState(null);
   const [chatList, setChatList] = useState([]);
   const [src, setSrc] = useState("");
   const [imgFile, setImgFile] = useState();
@@ -159,7 +160,8 @@ function Chat() {
   useEffect(() => {
     // console.log("reply:"+reply);
     // console.log("replyInfo:"+replyInfo);
-  }, [replyInfo,reply]);
+    // console.log(backId);
+  }, [replyInfo,reply,backId]);
 
   useEffect(() => {
     scrollToBottom(0);
@@ -332,17 +334,28 @@ function Chat() {
   };
 
   const goToReplyMsg = (e, id) => {
+    e.preventDefault();
     if(document.getElementById(id) == null) {
       alert("대상 메시지가 지워졌습니다.");
       return;
     }else {
-      var divTop = document.getElementById(id).offsetTop - 100;
+      var divTop = document.getElementById(id).offsetTop - (window.innerHeight/5*2.3);
       $('#chat').scrollTop(divTop);
+
+      // 반짝반짝
       document.getElementById(id).classList.add("selected_msg");
       setTimeout(function() { document.getElementById(id).classList.remove("selected_msg"); }, 300);
       setTimeout(function() { document.getElementById(id).classList.add("selected_msg");    }, 600);
       setTimeout(function() { document.getElementById(id).classList.remove("selected_msg"); }, 900);
+
+      setBackId(e.target.parentNode.id);
     }
+  }
+
+  const goToBackReplyMsg = (e, id) => {
+    var divTop = document.getElementById(backId).offsetTop-(themeInfo.theme == "dark" ? (window.innerHeight-45) : 80);
+    $('#chat').scrollTop(divTop);
+    setBackId(null);
   }
 
   const mouseX = (e) => {
@@ -368,6 +381,15 @@ function Chat() {
       return null;
     }
   }
+
+  const getScrollPoistion = (e) => {
+    if(backId) {
+      var chatScrollY = document.getElementById("chat").scrollTop;
+      if(chatScrollY > (document.getElementById(backId).offsetTop-(themeInfo.theme == "dark" ? (window.innerHeight-45) : (window.innerHeight-140)))) {
+        setBackId(null);
+      }
+    }
+  }
 // --------------------------------------------------
 
   return (
@@ -389,7 +411,7 @@ function Chat() {
           LOGOUT
         </button>
       </div>
-      <div id="chat" className="chat" onClick={handleMsgLeftClick}>
+      <div id="chat" className="chat" onClick={handleMsgLeftClick} onScroll={getScrollPoistion}>
         <ul>
           {chatList.map((chat, index) => {
               return <ChatItem theme={themeInfo.theme}
@@ -455,6 +477,9 @@ function Chat() {
           </li>
         </ul>
       </div>
+
+      {backId && <div id="back_reply"><span onClick={goToBackReplyMsg}>답장으로 돌아가기</span></div>}
+
     </div>
   );
 
