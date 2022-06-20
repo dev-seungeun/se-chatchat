@@ -90,8 +90,8 @@ a { color: var(--main-color) }
 	--main-header: 30px;
   --main-header-color: black;
 	--main-bottom: 30px;
-	--main-reply: 35px;
-	--main-reply-x: 55px;
+	--main-reply: 31px;
+	--main-reply-x: 50px;
 	--main-input-padding: 0px;
 }
 .chat_wrap[data-theme="dark"] .msg_reply { color: #D1B2FF; font-size: 10px; padding-right: 10px; cursor: pointer; }
