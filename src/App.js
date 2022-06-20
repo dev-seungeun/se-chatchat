@@ -48,7 +48,7 @@ function App() {
 
         <Route
           path="/"
-          element={<PublicRoute authenticated={authenticated} component={Login} />}
+          element={<PublicRoute authenticated={authenticated} component={Login} exact  />}
         />
 
         <Route

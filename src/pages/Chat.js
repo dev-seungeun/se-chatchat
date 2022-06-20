@@ -1,9 +1,9 @@
-import React, { useState, useHistory, useEffect, useRef, useCallback } from "react";
+import React, { useState, useHistory, useEffect, useRef, useCallback, useLocation } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { _commonGetCommonInfo, _commonSetCommonInfo, _commonHandleUserTheme } from "../helpers/common";
 import { _authLogout, _authGetCurrentUser } from "../helpers/auth";
 import { _storageSendImg, _storageDownloadImg } from "../helpers/storage";
-import { _databaseSendChat, _databaseUpdateChatTime, _databaseGetAddedChats, _databaseUpdateUserProfile } from "../helpers/database";
+import { _databaseGetRoomAuth, _databaseSendChat, _databaseUpdateChatTime, _databaseGetAddedChats, _databaseUpdateUserProfile } from "../helpers/database";
 import { _sendNotification } from "../helpers/useNotification";
 import ChatItem from "../components/ChatItem"
 import "../chat.css";
@@ -18,6 +18,8 @@ function Chat() {
   const [showScreen, setShowScreen] = useState(false);
   const [themeInfo, setThemeInfo] = useState({});
   const [msg, setMsg] = useState("");
+  const [reply, setReply] = useState();
+  const [replyInfo, setReplyInfo] = useState();
   const [chatList, setChatList] = useState([]);
   const [src, setSrc] = useState("");
   const [imgFile, setImgFile] = useState();
@@ -64,9 +66,12 @@ function Chat() {
         email: _authGetCurrentUser().email,
         message: msg,
         imgUrl: imgUrl,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        reply: reply
       }).then(() => {
         setMsg("");
+        setReply(null);
+        setReplyInfo(null);
       });
 
       _databaseUpdateChatTime(roomName, _authGetCurrentUser());
@@ -130,6 +135,15 @@ function Chat() {
 
 // USE_EFFECT & USE_CALLBACK ---------------------------------------
   useEffect(() => {
+    _databaseGetRoomAuth(roomName, function(roomAuth) {
+      if(roomAuth == null) {
+        alert("'"+roomName+"'방이 존재하지 않습니다.");
+        navigate("/room");
+      }else if(!Object.keys(roomAuth).includes(_authGetCurrentUser().uid)) {
+        alert("'"+roomName+"'방에 권한이 없습니다.");
+        navigate("/room");
+      }
+    })
     handleTheme(null, true, function() {
       _databaseGetAddedChats(roomName, setChatUI);
       document.addEventListener("keydown", escFunction, false);
@@ -141,6 +155,11 @@ function Chat() {
       document.removeEventListener("keydown", escFunction, false);
     }
   }, [roomName]);
+
+  useEffect(() => {
+    console.log("reply:"+reply)
+    console.log("replyInfo:"+replyInfo)
+  }, [replyInfo,reply]);
 
   useEffect(() => {
     scrollToBottom(0);
@@ -177,6 +196,32 @@ function Chat() {
         sendData(msg);
       }
     }
+  }
+
+  const handleMsgRightClick = (e, chatInfo) => {
+    e.preventDefault();
+    setReply(chatInfo.email+"-"+chatInfo.timestamp+"-"+chatInfo.message);
+    document.getElementById("rmenu").className = "right_btn_show";
+    document.getElementById("rmenu").style.top = mouseY(e) + 'px';
+    document.getElementById("rmenu").style.left = mouseX(e) + 'px';
+  }
+
+  const handleMsgLeftClick = (e) => {
+    setReply(null);
+    if(document.getElementById("rmenu").className == "right_btn_hide") {
+      setReplyInfo(null);
+    }
+    document.getElementById("rmenu").className = "right_btn_hide";
+  }
+
+  const handleRightMenu = (e) => {
+    e.preventDefault();
+    document.getElementById("rmenu").className = "right_btn_hide";
+    const replyData = document.getElementById("rmenu").getAttribute("data-reply");
+    const replyEmail = replyData.split("-")[0];
+    const replyId = replyData.split("-")[1];
+    const replyMsg = replyData.split("-")[2];
+    setReplyInfo(<span className="reply-email">{replyEmail+"님에게 답장"}<br/><span className="reply-msg">{replyMsg}</span></span>);
   }
 
   const handleTheme = (e, isInit, callback) => {
@@ -279,6 +324,30 @@ function Chat() {
   const closeImageModal = (e) => {
     document.getElementById("modal").style.display = "none";
   };
+
+  const mouseX = (e) => {
+    if (e.pageX) {
+      return e.pageX;
+    } else if (e.clientX) {
+      return e.clientX + (document.documentElement.scrollLeft ?
+        document.documentElement.scrollLeft :
+        document.body.scrollLeft);
+    } else {
+      return null;
+    }
+  }
+
+  const mouseY = (e) => {
+    if (e.pageY) {
+      return e.pageY;
+    } else if (e.clientY) {
+      return e.clientY + (document.documentElement.scrollTop ?
+        document.documentElement.scrollTop :
+        document.body.scrollTop);
+    } else {
+      return null;
+    }
+  }
 // --------------------------------------------------
 
   return (
@@ -300,12 +369,13 @@ function Chat() {
           LOGOUT
         </button>
       </div>
-      <div id="chat" className="chat">
+      <div id="chat" className="chat" onClick={handleMsgLeftClick}>
         <ul>
           {chatList.map((chat, index) => {
               return <ChatItem theme={themeInfo.theme}
                                chat={chat}
                                openImageModal={openImageModal}
+                               handleMsgRightClick={handleMsgRightClick}
                                key={index} />
           })}
         </ul>
@@ -314,6 +384,11 @@ function Chat() {
              className="input-image"
              src={src} />
       </div>
+      {replyInfo &&
+      <div id="reply-info">
+        {replyInfo}
+        <span className="reply-x" onClick={handleMsgLeftClick}>X</span>
+      </div>}
       <div className="input-div" onKeyPress={handleKeyPress}>
         <textarea
           id="textarea"
@@ -351,6 +426,14 @@ function Chat() {
     			<img id="modalBoxImg" src="" />
     		</div>
     	</div>
+
+      <div className="right_btn_hide" id="rmenu" onClick={handleRightMenu} data-reply={reply}>
+        <ul>
+          <li>
+            답장하기
+          </li>
+        </ul>
+      </div>
     </div>
   );
 

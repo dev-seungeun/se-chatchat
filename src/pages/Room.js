@@ -66,10 +66,32 @@ function Room() {
   }
 
 
+
+      function isURL(str) {
+        var patt = /(http(s)?:\/\/)?\w+(\.\w+)+/gi;     
+        var urls = (str.match(patt));
+
+        var result = [];
+        var temp = null;
+        urls.forEach((url, index) => {
+          if(temp != null) {
+            str = temp;
+          }
+          result.push(str.split(url)[0]);
+          result.push("#URL#"+url);
+          temp = str.split(url)[1];
+          if(index == result.length-1) {
+            result.push(temp)
+          }
+        })
+        return result;
+      }
+
 // USE EFFECT  ---------------------------------------
   useEffect(() => {
     getRoomList();
     _commonSetCommonInfo("selectedRoom", "");
+
     return() => {
       isMount = false;
     }

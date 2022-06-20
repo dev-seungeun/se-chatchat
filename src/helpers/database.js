@@ -16,6 +16,13 @@ export function _databaseGetRoomList(callback) {
   });
 }
 
+export function _databaseGetRoomAuth(roomName, callback) {
+  const roomRef = database_ref(database, "chats/rooms/"+roomName+"/members");
+  database_on_value(roomRef, (snapshot) => {
+    callback(snapshot.val());
+  });
+}
+
 export function _databaseGetChatTime(callback) {
   const roomRef = database_ref(database, "chats/rooms");
   database_on_child_changed(roomRef, (snapshot) => {
@@ -53,7 +60,8 @@ export function _databaseSendChat(roomName, data) {
     email: data.email,
     message: data.message,
     imgUrl: data.imgUrl,
-    timestamp: data.timestamp
+    timestamp: data.timestamp,
+    reply: data.reply
   });
 }
 
