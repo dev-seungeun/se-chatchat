@@ -209,11 +209,11 @@ function Chat() {
   const handleMsgLeftClick = (e, isX) => {
     if(!replyInfo || isX) {
       setReply(null);
-      if(document.getElementById("rmenu").className == "right_btn_hide") {
+      if(document.getElementById("rmenu") && document.getElementById("rmenu").className == "right_btn_hide") {
         setReplyInfo(null);
       }
     }
-    document.getElementById("rmenu").className = "right_btn_hide";
+    document.getElementById("rmenu") && document.getElementById("rmenu").className = "right_btn_hide";
   }
 
   const handleRightMenu = (e) => {
