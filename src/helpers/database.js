@@ -70,7 +70,7 @@ export function _databaseGetAddedChats(roomName, callback) {
   const today = date.getFullYear()+""+("0" + (date.getMonth() + 1)).slice(-2)+""+("0" + date.getDate()).slice(-2);;
   let chatList = [];
   let lastChat = null;
-  const chatRef = database_query(database_ref(database, "chats/rooms/"+roomName+"/messages/"+today), database_limit_to_last(10));
+  const chatRef = database_query(database_ref(database, "chats/rooms/"+roomName+"/messages/"+today), database_limit_to_last(50));
   database_on_child_added(chatRef, (snapshot) => {
     if(snapshot.val().hasOwnProperty("uid")) {
       callback(snapshot.val());

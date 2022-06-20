@@ -67,7 +67,7 @@ function Chat() {
         message: msg,
         imgUrl: imgUrl,
         timestamp: Date.now(),
-        reply: reply
+        reply: reply ? reply : null
       }).then(() => {
         setMsg("");
         setReply(null);
@@ -157,8 +157,8 @@ function Chat() {
   }, [roomName]);
 
   useEffect(() => {
-    console.log("reply:"+reply)
-    console.log("replyInfo:"+replyInfo)
+    // console.log("reply:"+reply);
+    // console.log("replyInfo:"+replyInfo);
   }, [replyInfo,reply]);
 
   useEffect(() => {
@@ -206,22 +206,25 @@ function Chat() {
     document.getElementById("rmenu").style.left = mouseX(e) + 'px';
   }
 
-  const handleMsgLeftClick = (e) => {
-    setReply(null);
-    if(document.getElementById("rmenu").className == "right_btn_hide") {
-      setReplyInfo(null);
+  const handleMsgLeftClick = (e, isX) => {
+    if(!replyInfo || isX) {
+      setReply(null);
+      if(document.getElementById("rmenu").className == "right_btn_hide") {
+        setReplyInfo(null);
+      }
     }
     document.getElementById("rmenu").className = "right_btn_hide";
   }
 
   const handleRightMenu = (e) => {
-    e.preventDefault();
+    e && e.preventDefault();
     document.getElementById("rmenu").className = "right_btn_hide";
     const replyData = document.getElementById("rmenu").getAttribute("data-reply");
     const replyEmail = replyData.split("-")[0];
     const replyId = replyData.split("-")[1];
     const replyMsg = replyData.split("-")[2];
     setReplyInfo(<span className="reply-email">{replyEmail+"님에게 답장"}<br/><span className="reply-msg">{replyMsg}</span></span>);
+    document.getElementById("textarea").focus();
   }
 
   const handleTheme = (e, isInit, callback) => {
@@ -229,6 +232,7 @@ function Chat() {
     _commonHandleUserTheme(function(userThemeObj) {
       setThemeInfo(userThemeObj);
       scrollToBottom(0);
+      handleMsgLeftClick();
       callback && callback();
     })
   }
@@ -325,9 +329,23 @@ function Chat() {
     document.getElementById("modal").style.display = "none";
   };
 
+  const goToReplyMsg = (e, id) => {
+    if(document.getElementById(id) == null) {
+      alert("대상 메시지가 지워졌습니다.");
+      return;
+    }else {
+      var divTop = document.getElementById(id).offsetTop - 100;
+      $('#chat').scrollTop(divTop);
+      document.getElementById(id).classList.add("selected_msg");
+      setTimeout(function() { document.getElementById(id).classList.remove("selected_msg"); }, 300);
+      setTimeout(function() { document.getElementById(id).classList.add("selected_msg");    }, 600);
+      setTimeout(function() { document.getElementById(id).classList.remove("selected_msg"); }, 900);
+    }
+  }
+
   const mouseX = (e) => {
     if (e.pageX) {
-      return e.pageX;
+      return e.pageX-20;
     } else if (e.clientX) {
       return e.clientX + (document.documentElement.scrollLeft ?
         document.documentElement.scrollLeft :
@@ -376,6 +394,7 @@ function Chat() {
                                chat={chat}
                                openImageModal={openImageModal}
                                handleMsgRightClick={handleMsgRightClick}
+                               goToReplyMsg={goToReplyMsg}
                                key={index} />
           })}
         </ul>
@@ -387,7 +406,7 @@ function Chat() {
       {replyInfo &&
       <div id="reply-info">
         {replyInfo}
-        <span className="reply-x" onClick={handleMsgLeftClick}>X</span>
+        <span className="reply-x" onClick={(e)=>handleMsgLeftClick(e, true)}>X</span>
       </div>}
       <div className="input-div" onKeyPress={handleKeyPress}>
         <textarea

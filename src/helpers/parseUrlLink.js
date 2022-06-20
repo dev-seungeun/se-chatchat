@@ -9,7 +9,7 @@ export function _parseUrlLink(content) {
 
     const htmlArr = [];
     convertContent.split('\n').forEach(function (text) {
-      const textHtml = "<p>" + text + "</p>";
+      const textHtml = text;
       htmlArr.push(textHtml)
     })
 
@@ -17,8 +17,6 @@ export function _parseUrlLink(content) {
   }
 
   return (
-      <div>
-        <div dangerouslySetInnerHTML={replace(content)}></div>
-      </div>
+      <span dangerouslySetInnerHTML={replace(content)}></span>
   )
 }
