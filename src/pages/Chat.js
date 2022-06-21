@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { _commonGetCommonInfo, _commonSetCommonInfo, _commonHandleUserTheme } from "../helpers/common";
 import { _authLogout, _authGetCurrentUser } from "../helpers/auth";
 import { _storageSendImg, _storageDownloadImg } from "../helpers/storage";
-import { _databaseGetRoomAuth, _databaseSendChat, _databaseUpdateChatTime, _databaseGetAddedChats, _databaseUpdateUserProfile } from "../helpers/database";
+import { _databaseGetRoomAuth, _databaseSendChat, _databaseUpdateChatTime, _databaseGetAddedChats, _databaseGetCountChats, _databaseUpdateUserProfile } from "../helpers/database";
 import { _sendNotification } from "../helpers/useNotification";
 import ChatItem from "../components/ChatItem"
 import "../chat.css";
@@ -11,6 +11,7 @@ import "../chat.css";
 function Chat() {
 
   let isMount = true;
+  let notifyStart = true;
   let chatTemp = [];
   let navigate = useNavigate();
   const messageRef = useRef();
@@ -25,19 +26,19 @@ function Chat() {
   const [src, setSrc] = useState("");
   const [imgFile, setImgFile] = useState();
 
-  const setChatUI = (dbChatObj, isInitEnd, isClean) => {
+  const setChatUI = (dbChatObj) => {
 
     chatTemp = chatTemp.concat(dbChatObj);
     setChatList(chatTemp);
 
     const focused = document.hasFocus();
-    if(!focused && isMount) {
+    if(!focused && isMount && notifyStart) {
       notify(dbChatObj);
     }
 
     isMount && scrollToBottom(0);
 
-  };
+  }
 
   const notify = (chat) => {
     if(chat.uid !== _authGetCurrentUser().uid) {
@@ -145,7 +146,10 @@ function Chat() {
       }
     })
     handleTheme(null, true, function() {
-      _databaseGetAddedChats(roomName, setChatUI);
+      _databaseGetAddedChats(roomName, setChatUI)
+      .then((result) => {
+        notifyStart = result;
+      });
       document.addEventListener("keydown", escFunction, false);
       setShowScreen(true);
     });
@@ -163,7 +167,9 @@ function Chat() {
   }, [replyInfo,reply,backId]);
 
   useEffect(() => {
-    scrollToBottom(0);
+    if(showScreen)  {
+      scrollToBottom(0);
+    }
   }, [showScreen]);
 
   const escFunction = useCallback((event) => {

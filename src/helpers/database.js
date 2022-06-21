@@ -65,15 +65,24 @@ export function _databaseSendChat(roomName, data) {
   });
 }
 
-export function _databaseGetAddedChats(roomName, callback) {
-  const date = new Date();
-  const today = date.getFullYear()+""+("0" + (date.getMonth() + 1)).slice(-2)+""+("0" + date.getDate()).slice(-2);;
-  let chatList = [];
-  let lastChat = null;
-  const chatRef = database_query(database_ref(database, "chats/rooms/"+roomName+"/messages/"+today), database_limit_to_last(50));
-  database_on_child_added(chatRef, (snapshot) => {
-    if(snapshot.val().hasOwnProperty("uid")) {
-      callback(snapshot.val());
-    }
-  });
+export async function _databaseGetAddedChats(roomName, callback) {
+    const date = new Date();
+    const today = date.getFullYear()+""+("0" + (date.getMonth() + 1)).slice(-2)+""+("0" + date.getDate()).slice(-2);;
+    const chatRef = database_query(database_ref(database, "chats/rooms/"+roomName+"/messages/"+today), database_limit_to_last(50));
+    await database_on_child_added(chatRef, (snapshot) => {
+      if(snapshot.val().hasOwnProperty("uid")) {
+        callback(snapshot.val());
+      }
+    });
+    return true;
 }
+
+// export function _databaseGetCountChats(roomName, callback) {
+//   const date = new Date();
+//   const today = date.getFullYear()+""+("0" + (date.getMonth() + 1)).slice(-2)+""+("0" + date.getDate()).slice(-2);;
+//   const chatRef = database_query(database_ref(database, "chats/rooms/"+roomName+"/messages/"+today), database_limit_to_last(50));
+//   database_on_value(chatRef, (snapshot) => {
+//     console.log("ㅜㅜㅜㅜㅜㅜ ???? ㅜㅜㅜㅜㅜㅜㅜㅜㅜ")
+//     callback(Object.keys(snapshot.val()).length)
+//   });
+// }
