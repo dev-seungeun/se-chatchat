@@ -149,9 +149,9 @@ function Chat() {
       _databaseGetAddedChats(roomName, setChatUI)
       .then((result) => {
         notifyStart = result;
+        setShowScreen(true);
       });
       document.addEventListener("keydown", escFunction, false);
-      setShowScreen(true);
     });
 
     return() => {
