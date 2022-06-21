@@ -1,5 +1,5 @@
 export function _parseUrlLink(content) {
-  const urlRegex = /(http(s)?:\/\/)?\w+(\.\w+)+/gi;
+  const urlRegex = new RegExp("(http|https|ftp|telnet|news|irc)://([-/.a-zA-Z0-9_~#%$?&=:200-377()]+)","gi");
 
   const replace = (content) => {
     const convertContent = content.replace(urlRegex, function (url) {
