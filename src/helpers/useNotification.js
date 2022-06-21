@@ -25,7 +25,7 @@ export function _sendNotification(title, option, callback) {
     notification.onclick = function(event) {
       event.preventDefault();
       window.focus();
-      callback(option.roomName);
+      callback && callback(option.roomName);
     }
   }
 
