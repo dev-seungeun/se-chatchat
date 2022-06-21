@@ -45,7 +45,6 @@ function Chat() {
       const res = _sendNotification("SESH", {
         body: chat.email,
         roomName : roomName
-      }, function(enterRoomName){
       });
     }
   }
