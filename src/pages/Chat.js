@@ -168,7 +168,10 @@ function Chat() {
 
   useEffect(() => {
     if(showScreen)  {
-      scrollToBottom(0);
+      scrollToBottom(0, "auto");
+      setTimeout(function(){
+        document.getElementById("chat_wrap").style.visibility = "visible";
+      }, 10)
     }
   }, [showScreen]);
 
@@ -301,10 +304,10 @@ function Chat() {
   }
 
 // ETC ----------------------------------------------
-  const scrollToBottom = (msTime) => {
+  const scrollToBottom = (msTime, behavior) => {
     if(!messageRef.current) return;
     setTimeout(() => {
-      messageRef.current.scrollIntoView({ behavior: "smooth", block: "end" })
+      messageRef.current.scrollIntoView({ behavior: behavior ? behavior : "smooth", block: "end" })
     }, msTime);
   }
 
@@ -314,7 +317,7 @@ function Chat() {
     return today;
   }
 
-  const LoadingWithMask = () => {     
+  const LoadingWithMask = () => {    
     document.getElementById("loadingMask").style.display = "block";  
   };
 
@@ -399,7 +402,7 @@ function Chat() {
 
   return (
     showScreen &&
-    <div className="chat_wrap" data-theme={themeInfo.theme}>
+    <div id="chat_wrap" className="chat_wrap" data-theme={themeInfo.theme} style={{visibility:"hidden"}}>
       <div className="header">
         <button
           className="mode"
