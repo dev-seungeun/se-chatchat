@@ -314,7 +314,7 @@ function Chat() {
     return today;
   }
 
-  const LoadingWithMask = () => {    
+  const LoadingWithMask = () => {     
     document.getElementById("loadingMask").style.display = "block";  
   };
 
