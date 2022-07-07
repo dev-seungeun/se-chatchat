@@ -14,11 +14,11 @@ function Chat() {
   let notifyStart = true;
   let chatTemp = [];
   let navigate = useNavigate();
+  let messageText = "";
   const messageRef = useRef();
   const roomName = useParams().roomName;
   const [showScreen, setShowScreen] = useState(false);
   const [themeInfo, setThemeInfo] = useState({});
-  const [msg, setMsg] = useState("");
   const [reply, setReply] = useState(null);
   const [replyInfo, setReplyInfo] = useState(null);
   const [backId, setBackId] = useState(null);
@@ -50,27 +50,28 @@ function Chat() {
     }
   }
 
-  const sendData = (msg, imgUrl) => {
-    if(msg && msg.trim() !== "") {
-      sendMsg(msg, imgUrl != undefined ? imgUrl : "")
+  const sendData = (message, imgUrl) => {
+    if(message && message.trim() !== "") {
+      sendMsg(message, imgUrl != undefined ? imgUrl : "")
     }else if(src != "") {
       sendImg();
     }
   }
 
-  const sendMsg = async (msg, imgUrl) => {
+  const sendMsg = async (message, imgUrl) => {
     try {
 
       await _databaseSendChat(roomName,
       {
         uid: _authGetCurrentUser().uid,
         email: _authGetCurrentUser().email,
-        message: msg,
+        message: message,
         imgUrl: imgUrl,
         timestamp: Date.now(),
         reply: reply ? reply : null
       }).then(() => {
-        setMsg("");
+        messageText = "";
+        document.getElementById("textarea").value = messageText;
         setReply(null);
         setReplyInfo(null);
       });
@@ -185,7 +186,7 @@ function Chat() {
 
 // HANDLE  -------------------------------------------
   const handleSendMsg = async (e) => {
-    sendData(msg);
+    sendData(messageText);
   };
 
   const handleLogOut = async () => {
@@ -197,13 +198,22 @@ function Chat() {
   };
 
   const handleOnChange = (e) => {
-    setMsg(e.target.value);
+    messageText = e.target.value;
+    document.getElementById("textarea").value = messageText;
   };
 
   const handleKeyPress = async(e) => {
+    console.log("e.key : " + e.key)
+    console.log("shiftKey : " + e.shiftKey)
+    console.log("messageText : " + messageText)
     if(e.key == "Enter") {
-      if(!e.shiftKey) {
-        sendData(msg);
+      if(messageText.trim() == ""){
+        e.preventDefault();
+      }else {
+        if(!e.shiftKey) {
+          sendData(messageText);
+          e.preventDefault();
+        }
       }
     }
   }
@@ -444,7 +454,6 @@ function Chat() {
         <textarea
           id="textarea"
           className="input-msg"
-          value={msg}
           placeholder="Message Here."
           onChange={handleOnChange}
           onPaste={handleOnPaste}
