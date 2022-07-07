@@ -1,5 +1,7 @@
 # SE React Chatting App
 
+<br/>
+
 ## Local
 
 `npm run start`
@@ -10,7 +12,7 @@
 <br/>
 
 
-### Firebase 배포
+## Firebase 배포
 
 `npm run build`
 `firebase deploy`
