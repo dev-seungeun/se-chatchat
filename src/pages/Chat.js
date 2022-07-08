@@ -14,7 +14,6 @@ function Chat() {
   let notifyStart = true;
   let chatTemp = [];
   let navigate = useNavigate();
-  let messageText = "";
   const messageRef = useRef();
   const roomName = useParams().roomName;
   const [showScreen, setShowScreen] = useState(false);
@@ -50,10 +49,12 @@ function Chat() {
     }
   }
 
-  const sendData = (message, imgUrl) => {
-    if(message && message.trim() !== "") {
-      sendMsg(message, imgUrl != undefined ? imgUrl : "")
-    }else if(src != "") {
+  const sendData = () => {
+    var msgTxt = document.getElementById("textarea").value;
+    if(msgTxt && msgTxt.trim() !== "") {
+      sendMsg(msgTxt, "");
+    }
+    if(src != "") {
       sendImg();
     }
   }
@@ -70,10 +71,11 @@ function Chat() {
         timestamp: Date.now(),
         reply: reply ? reply : null
       }).then(() => {
-        messageText = "";
-        document.getElementById("textarea").value = messageText;
-        setReply(null);
-        setReplyInfo(null);
+        if(imgUrl == "") {
+          document.getElementById("textarea").value = "";
+          setReply(null);
+          setReplyInfo(null);
+        }
       });
 
       _databaseUpdateChatTime(roomName, _authGetCurrentUser());
@@ -89,7 +91,7 @@ function Chat() {
       _storageSendImg(roomName, imgFile, function(fileName) {
         if(fileName != undefined) {
           document.getElementById("input-image").style.display = "none";
-          sendData("image_send_check:"+fileName, src);
+          sendMsg("image_send_check:"+fileName, src);
           setSrc("");
         }else {
           alert("Upload Failed")
@@ -186,7 +188,7 @@ function Chat() {
 
 // HANDLE  -------------------------------------------
   const handleSendMsg = async (e) => {
-    sendData(messageText);
+    sendData();
   };
 
   const handleLogOut = async () => {
@@ -198,20 +200,17 @@ function Chat() {
   };
 
   const handleOnChange = (e) => {
-    messageText = e.target.value;
-    document.getElementById("textarea").value = messageText;
+    document.getElementById("textarea").value = e.target.value;
   };
 
   const handleKeyPress = async(e) => {
-    console.log("e.key : " + e.key)
-    console.log("shiftKey : " + e.shiftKey)
-    console.log("messageText : " + messageText)
     if(e.key == "Enter") {
-      if(messageText.trim() == ""){
+      var msgTxt = document.getElementById("textarea").value;
+      if(msgTxt.trim() == "" && src == ""){
         e.preventDefault();
       }else {
         if(!e.shiftKey) {
-          sendData(messageText);
+          sendData();
           e.preventDefault();
         }
       }
@@ -251,10 +250,18 @@ function Chat() {
 
   const handleTheme = (e, isInit, callback) => {
     !isInit && _databaseUpdateUserProfile("theme", themeInfo.theme == "dark" ? "light" : "dark", _authGetCurrentUser());
+
+    if(document.getElementById("chat_wrap")) {
+      document.getElementById("chat_wrap").style.visibility = "hidden";
+    }
+
     _commonHandleUserTheme(function(userThemeObj) {
       setThemeInfo(userThemeObj);
-      scrollToBottom(0);
       handleMsgLeftClick();
+      scrollToBottom(0, "auto");
+      if(document.getElementById("chat_wrap")) {
+        document.getElementById("chat_wrap").style.visibility = "visible";
+      }
       callback && callback();
     })
   }
@@ -280,6 +287,7 @@ function Chat() {
       var file = new File([blob], Date.now()+Math.floor(Math.random()*100));
       setImgFile(file);
     }
+
   }
 
   const handleChangeFile = (e) => {
