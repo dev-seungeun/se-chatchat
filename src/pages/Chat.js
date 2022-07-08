@@ -35,7 +35,7 @@ function Chat() {
       notify(dbChatObj);
     }
 
-    isMount && scrollToBottom(0);
+    // isMount && scrollToBottom(0);
 
   }
 
@@ -96,7 +96,9 @@ function Chat() {
         }else {
           alert("Upload Failed")
         }
+
         closeLoadingWithMask();
+
       })
     } catch (error) {
       console.log(error);
@@ -163,6 +165,13 @@ function Chat() {
     }
   }, [roomName]);
 
+
+  useEffect(() => {
+    if(chatList.length > 0) {
+      scrollToBottom(0);
+    }
+  }, [chatList]);
+
   useEffect(() => {
     // console.log("reply:"+reply);
     // console.log("replyInfo:"+replyInfo);
@@ -172,9 +181,7 @@ function Chat() {
   useEffect(() => {
     if(showScreen)  {
       scrollToBottom(0, "auto");
-      setTimeout(function(){
-        document.getElementById("chat_wrap").style.visibility = "visible";
-      }, 10)
+      document.getElementById("chat_wrap").style.visibility = "visible";
     }
   }, [showScreen]);
 
