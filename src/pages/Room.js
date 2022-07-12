@@ -30,7 +30,7 @@ function Room() {
                 type="button"
                 onClick={handleSelectRoom}
                 value={roomName}>
-                <span>{roomName}</span>
+                {roomName} 
               </button>
             </li>
           ));
