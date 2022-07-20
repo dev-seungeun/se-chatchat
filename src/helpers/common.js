@@ -2,6 +2,7 @@ import { _databaseGetUserProfile, _databaseUpdateUserProfile  } from "../helpers
 import { _authGetCurrentUser } from "../helpers/auth";
 
 const info = {selectedRoom: "",
+              notifyListener: false,
               themeInfo: {},
               theme_dark : {theme:"dark", themeBtnValue:"LIGHT"},
               theme_light: {theme:"light", themeBtnValue:"DARK"}};

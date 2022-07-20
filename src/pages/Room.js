@@ -30,7 +30,7 @@ function Room() {
                 type="button"
                 onClick={handleSelectRoom}
                 value={roomName}>
-                {roomName} 
+                {roomName}
               </button>
             </li>
           ));
@@ -41,13 +41,17 @@ function Room() {
       }
     });
 
-    _databaseGetChatTime(function(roomName, chatInfo) {
-      const selectedRoom = _commonGetCommonInfo("selectedRoom");
-      if(chatInfo.date > Date.now()
-            && (isMount || (!isMount && selectedRoom != roomName))) {
-        notify(roomName, chatInfo, !isMount && selectedRoom ? true : false);
-      }
-    });
+    if(!_commonGetCommonInfo("notifyListener")) {
+      _databaseGetChatTime(function(roomName, chatInfo) {
+        const selectedRoom = _commonGetCommonInfo("selectedRoom");
+        if(chatInfo.date > Date.now()
+              && (isMount || (!isMount && selectedRoom != roomName))) {
+          notify(roomName, chatInfo, !isMount && selectedRoom ? true : false);
+        }
+      });
+    }
+
+    _commonSetCommonInfo("notifyListener", true);
 
   };
 
