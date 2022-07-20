@@ -47,7 +47,7 @@ a { color: var(--main-color) }
 	--main-bottom: 80px;
 	--main-reply: 81px;
 	--main-reply-x: 100px;
-	--main-input-padding: 10px 75px 10px 10px;
+	--main-input-padding: 10px 100px 10px 10px;
 }
 .chat_wrap[data-theme="light"] .title { width:100%; text-align: center; }
 .chat_wrap[data-theme="light"] .msg_reply { color: #D1B2FF; font-size: 10px; cursor: pointer; }
@@ -94,7 +94,7 @@ a { color: var(--main-color) }
 	--main-bottom: 30px;
 	--main-reply: 31px;
 	--main-reply-x: 50px;
-	--main-input-padding: 0px;
+	--main-input-padding: 0 30px 0 0;
 }
 .chat_wrap[data-theme="dark"] .msg_reply { color: #D1B2FF; font-size: 10px; padding-right: 10px; cursor: pointer; }
 .chat_wrap[data-theme="dark"] .chat ul { width: 100%; list-style: none; }
@@ -111,7 +111,7 @@ a { color: var(--main-color) }
 .chat_wrap[data-theme="dark"] #image_upload span {
 	position: fixed;
 	color: var(--main-color);
-	bottom: 16px;
+	bottom: 8px;
 	right: 9px;
 	font-size:10px;
 	width:20px;
