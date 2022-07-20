@@ -16,7 +16,7 @@ a { color: var(--main-color) }
 .chat_wrap .chat {  margin: var(--main-header) 0 var(--main-bottom) 0; overflow-y: auto; height: calc(100% - var(--main-bottom) - var(--main-header)); background-color: var(--main-background-color) }
 .chat_wrap .chat ul li > div { font-size: 10px;  }
 .chat_wrap .input-div { position:fixed; width:100%; bottom:0; height: var(--main-bottom); background-color: var(--main-background-color); border-top: 1px solid black; }
-.chat_wrap .input-div > textarea { font-size: 11px; width: 100%; height: 100%; border: none; padding: var(--main-input-padding); background-color: var(--main-background-color); color: var(--main-color); }
+.chat_wrap .input-div > textarea { overflow: hidden; font-size: 11px; width: 100%; height: 100%; border: none; padding: var(--main-input-padding); background-color: var(--main-background-color); color: var(--main-color); }
 .chat_wrap .input-div > textarea:focus { outline:none; }
 .chat_wrap .selected_msg { color: #FF5E00 !important; }
 .chat_wrap .selected_msg a { color: #FF5E00 !important; }
