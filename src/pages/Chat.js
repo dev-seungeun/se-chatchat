@@ -30,8 +30,8 @@ function Chat() {
 
     chatTemp = chatTemp.concat(dbChatObj);
     setChatList(chatTemp);
- 
-    if(!focused && isMount && notifyStart) {
+
+    if(!document.hasFocus() && isMount && notifyStart) {
       notify(dbChatObj);
     }
 
