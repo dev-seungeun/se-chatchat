@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 
+  var notifyArr = [];
 export function _sendNotification(title, option, callback) {
+
 
   if (!("Notification" in window)) {
     return;
@@ -22,11 +24,30 @@ export function _sendNotification(title, option, callback) {
     }
   }else {
     var notification = new Notification(title, option);
+
+    var roomNotify = notifyArr.find(x => x.roomName == option.roomName);
+    if(roomNotify == undefined) {
+      notifyArr.push({roomName: option.roomName, notify: [notification]});
+    }else {
+      roomNotify.notify.push(notification);
+    }
+
+
     notification.onclick = function(event) {
       event.preventDefault();
+      removeRoomNotifys(option.roomName);
       window.focus();
       callback && callback(option.roomName);
     }
   }
 
 };
+
+function removeRoomNotifys(roomName){
+  var roomNotify = notifyArr.find(x => x.roomName == roomName);
+  if(roomNotify != undefined) {
+    for(var i=0; i<roomNotify.notify.length;i++){
+      roomNotify.notify[i].close();
+    }
+  }
+}
