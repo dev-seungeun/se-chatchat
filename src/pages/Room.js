@@ -57,7 +57,7 @@ function Room() {
 
   const notify = (roomName, chat, replace) => {
     if(chat.uid !== _authGetCurrentUser().uid) {
-      console.log("NOTI > from wating room > "+chat.email);
+      console.log("NOTI > from wating room ["+roomName+"] > "+chat.email);
       const res = _sendNotification("SESH", {
         body: chat.email,
         roomName : roomName

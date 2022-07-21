@@ -48,7 +48,6 @@ export function _removeRoomNotifys(roomName){
   if(roomNotify != undefined) {
     for(var i=0; i<roomNotify.notify.length;i++){
       roomNotify.notify[i].close();
-        console.log(roomNotify.notify.length)
     }
     roomNotify.notify = [];
   }
