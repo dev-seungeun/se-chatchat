@@ -44,7 +44,6 @@ export function _sendNotification(title, option, callback) {
 };
 
 export function _removeRoomNotifys(roomName){
-  console.log("remove notify > "+roomName)
   var roomNotify = notifyArr.find(x => x.roomName == roomName);
   if(roomNotify != undefined) {
     for(var i=0; i<roomNotify.notify.length;i++){
