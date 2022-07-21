@@ -24,13 +24,13 @@ function Chat() {
   const [chatList, setChatList] = useState([]);
   const [src, setSrc] = useState("");
   const [imgFile, setImgFile] = useState();
-  const [focused, setFocused] = useState(false);
+  const [focused, setFocused] = useState(true);
 
   const setChatUI = (dbChatObj) => {
 
     chatTemp = chatTemp.concat(dbChatObj);
     setChatList(chatTemp);
-
+ 
     if(!focused && isMount && notifyStart) {
       notify(dbChatObj);
     }
