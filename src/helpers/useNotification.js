@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
-  var notifyArr = [];
+var notifyArr = [];
+
 export function _sendNotification(title, option, callback) {
 
 
@@ -35,7 +36,6 @@ export function _sendNotification(title, option, callback) {
 
     notification.onclick = function(event) {
       event.preventDefault();
-      removeRoomNotifys(option.roomName);
       window.focus();
       callback && callback(option.roomName);
     }
@@ -43,7 +43,7 @@ export function _sendNotification(title, option, callback) {
 
 };
 
-function removeRoomNotifys(roomName){
+export function _removeRoomNotifys(roomName){
   var roomNotify = notifyArr.find(x => x.roomName == roomName);
   if(roomNotify != undefined) {
     for(var i=0; i<roomNotify.notify.length;i++){

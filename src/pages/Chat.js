@@ -4,7 +4,7 @@ import { _commonGetCommonInfo, _commonSetCommonInfo, _commonHandleUserTheme } fr
 import { _authLogout, _authGetCurrentUser } from "../helpers/auth";
 import { _storageSendImg, _storageDownloadImg } from "../helpers/storage";
 import { _databaseGetRoomAuth, _databaseSendChat, _databaseUpdateChatTime, _databaseGetAddedChats, _databaseGetCountChats, _databaseUpdateUserProfile } from "../helpers/database";
-import { _sendNotification } from "../helpers/useNotification";
+import { _sendNotification, _removeRoomNotifys } from "../helpers/useNotification";
 import ChatItem from "../components/ChatItem"
 import "../chat.css";
 
@@ -24,13 +24,13 @@ function Chat() {
   const [chatList, setChatList] = useState([]);
   const [src, setSrc] = useState("");
   const [imgFile, setImgFile] = useState();
+  const [focused, setFocused] = useState(false);
 
   const setChatUI = (dbChatObj) => {
 
     chatTemp = chatTemp.concat(dbChatObj);
     setChatList(chatTemp);
 
-    const focused = document.hasFocus();
     if(!focused && isMount && notifyStart) {
       notify(dbChatObj);
     }
@@ -157,6 +157,8 @@ function Chat() {
         setShowScreen(true);
       });
       document.addEventListener("keydown", escFunction, false);
+      window.onfocus = focusFunction;
+      window.onblur = blurFunction;
     });
 
     return() => {
@@ -191,6 +193,16 @@ function Chat() {
       document.getElementById("input-image").style.display = "none";
     }
   }, []);
+
+  const focusFunction = (event) => {
+    setFocused(true);
+    _removeRoomNotifys(roomName);
+  };
+
+  const blurFunction = (event) => {
+    setFocused(false);
+  };
+
 
 
 // HANDLE  -------------------------------------------
