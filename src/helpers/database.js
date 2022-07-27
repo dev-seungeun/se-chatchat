@@ -4,8 +4,7 @@ import { _commonGetCommonInfo, _commonSetCommonInfo } from "./common"
 import { _authGetCurrentUser } from "./auth"
 
 export function _databaseGetRoomList(callback) {
-  const roomRef = database_ref(database, "chats/rooms");
-  database_on_value(roomRef, (snapshot) => {
+  database_get(database_child(database_ref(database), "chats/rooms")).then((snapshot) => {
     let roomNameList = [];
     Object.keys(snapshot.val()).forEach((roomName, index) => {
       if(snapshot.val()[roomName].members && Object.keys(snapshot.val()[roomName].members).includes(_authGetCurrentUser().uid)) {
@@ -23,12 +22,10 @@ export function _databaseGetRoomAuth(roomName, callback) {
   });
 }
 
-export function _databaseGetChatTime(callback) {
-  const roomRef = database_ref(database, "chats/rooms");
+export function _databaseGetChatTime(roomName, callback) {
+  const roomRef = database_ref(database, "chats/rooms/"+roomName);
   database_on_child_changed(roomRef, (snapshot) => {
-    if(Object.keys(snapshot.val().members).includes(_authGetCurrentUser().uid)) {
-      callback(snapshot.key, snapshot.val().lastChat);
-    }
+    callback(snapshot.val())
   });
 }
 
@@ -82,7 +79,6 @@ export async function _databaseGetAddedChats(roomName, callback) {
 //   const today = date.getFullYear()+""+("0" + (date.getMonth() + 1)).slice(-2)+""+("0" + date.getDate()).slice(-2);;
 //   const chatRef = database_query(database_ref(database, "chats/rooms/"+roomName+"/messages/"+today), database_limit_to_last(50));
 //   database_on_value(chatRef, (snapshot) => {
-//     console.log("ㅜㅜㅜㅜㅜㅜ ???? ㅜㅜㅜㅜㅜㅜㅜㅜㅜ")
 //     callback(Object.keys(snapshot.val()).length)
 //   });
 // }

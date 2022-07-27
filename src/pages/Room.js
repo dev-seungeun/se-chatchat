@@ -17,10 +17,25 @@ function Room() {
   const getRoomList = async() => {
 
     _databaseGetRoomList(function(roomNameList) {
+
       if(roomNameList.length == 0) {
         alert("모든 방에 권한이 없습니다.\n관리자에게 문의해주세요.");
         _authLogout();
       }else {
+
+        if(!_commonGetCommonInfo("notifyListener")) {
+          roomNameList.forEach((roomName, i) => {
+            _databaseGetChatTime(roomName, function(chatInfo) {
+              const selectedRoom = _commonGetCommonInfo("selectedRoom");
+              if(chatInfo.date > Date.now() && selectedRoom != roomName) {
+                var routeReplace = selectedRoom != "" ? true : false;
+                notify(roomName, chatInfo, routeReplace);
+              }
+            });
+          });
+          _commonSetCommonInfo("notifyListener", true);
+        }
+
         const myList = () => {
           const list = roomNameList.map((roomName, index) => (
             <li key={createItem(index+"li")}>
@@ -34,24 +49,13 @@ function Room() {
               </button>
             </li>
           ));
-          return <ul>{list}</ul>;
+          return <ul>{list}</ul>
         };
 
         setRoomList(myList);
+
       }
     });
-
-    if(!_commonGetCommonInfo("notifyListener")) {
-      _databaseGetChatTime(function(roomName, chatInfo) {
-        const selectedRoom = _commonGetCommonInfo("selectedRoom");
-        if(chatInfo.date > Date.now()
-              && (isMount || (!isMount && selectedRoom != roomName))) {
-          notify(roomName, chatInfo, !isMount && selectedRoom ? true : false);
-        }
-      });
-    }
-
-    _commonSetCommonInfo("notifyListener", true);
 
   };
 
@@ -73,6 +77,7 @@ function Room() {
   useEffect(() => {
     getRoomList();
     _commonSetCommonInfo("selectedRoom", "");
+    isMount = true;
 
     return() => {
       isMount = false;
