@@ -16,48 +16,56 @@ function Room() {
 
   const getRoomList = async() => {
 
-    _databaseGetRoomList(function(roomNameList) {
+    var savedRoomList = _commonGetCommonInfo("roomList");
 
-      if(roomNameList.length == 0) {
-        alert("모든 방에 권한이 없습니다.\n관리자에게 문의해주세요.");
-        _authLogout();
-      }else {
-
-        if(!_commonGetCommonInfo("notifyListener")) {
-          roomNameList.forEach((roomName, i) => {
-            _databaseGetChatTime(roomName, function(chatInfo) {
-              const selectedRoom = _commonGetCommonInfo("selectedRoom");
-              if(chatInfo.date > Date.now() && selectedRoom != roomName) {
-                var routeReplace = selectedRoom != "" ? true : false;
-                notify(roomName, chatInfo, routeReplace);
-              }
-            });
-          });
-          _commonSetCommonInfo("notifyListener", true);
-        }
-
-        const myList = () => {
-          const list = roomNameList.map((roomName, index) => (
-            <li key={createItem(index+"li")}>
-              <button
-                key={createItem(index+"room")}
-                className = "room"
-                type="button"
-                onClick={handleSelectRoom}
-                value={roomName}>
-                {roomName}
-              </button>
-            </li>
-          ));
-          return <ul>{list}</ul>
-        };
-
-        setRoomList(myList);
-
-      }
-    });
+    if(savedRoomList.length > 0) {
+      drawRoomList(savedRoomList);
+    }else {
+      _databaseGetRoomList(function(roomNameList) {
+        _commonSetCommonInfo("roomList", roomNameList);
+        drawRoomList(roomNameList);
+      });
+    }
 
   };
+
+  const drawRoomList = (roomNameList) => {
+
+    if(roomNameList.length == 0) {
+      alert("모든 방에 권한이 없습니다.\n관리자에게 문의해주세요.");
+      _authLogout();
+    }else {
+
+      roomNameList.forEach((roomName, i) => {
+        _databaseGetChatTime(roomName, function(chatInfo) {
+          const selectedRoom = _commonGetCommonInfo("selectedRoom");
+          if(chatInfo.date > Date.now() && selectedRoom != roomName) {
+            var routeReplace = selectedRoom != "" ? true : false;
+            notify(roomName, chatInfo, routeReplace);
+          }
+        });
+      });
+
+      const myList = () => {
+        const list = roomNameList.map((roomName, index) => (
+          <li key={createItem(index+"li")}>
+            <button
+              key={createItem(index+"room")}
+              className = "room"
+              type="button"
+              onClick={handleSelectRoom}
+              value={roomName}>
+              {roomName}
+            </button>
+          </li>
+        ));
+        return <ul>{list}</ul>
+      };
+
+      setRoomList(myList);
+
+    }
+  }
 
   const notify = (roomName, chat, replace) => {
     if(chat.uid !== _authGetCurrentUser().uid) {
