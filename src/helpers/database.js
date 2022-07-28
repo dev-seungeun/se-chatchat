@@ -4,7 +4,8 @@ import { _commonGetCommonInfo, _commonSetCommonInfo } from "./common"
 import { _authGetCurrentUser } from "./auth"
 
 export function _databaseGetRoomList(callback) {
-  database_get(database_child(database_ref(database), "chats/rooms")).then((snapshot) => {
+  const roomRef = database_ref(database, "chats/rooms");
+  database_on_value(roomRef, (snapshot) => {
     let roomNameList = [];
     Object.keys(snapshot.val()).forEach((roomName, index) => {
       if(snapshot.val()[roomName].members && Object.keys(snapshot.val()[roomName].members).includes(_authGetCurrentUser().uid)) {
@@ -38,7 +39,7 @@ export function _databaseUpdateChatTime(roomName, currentUser) {
 }
 
 export function _databaseGetUserProfile(currentUser, callback) {
-  database_get(database_child(database_ref(database), "chats/profiles/"+currentUser.uid)).then((snapshot) => {
+  database_get(database_child(database_ref(database), "chats/profiles/"+currentUser.uid)).then((snapshot) => { 
     callback(snapshot.val());
   });
 }
