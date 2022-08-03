@@ -22,7 +22,18 @@ function Room() {
       drawRoomList(savedRoomList);
     }else {
       _databaseGetRoomList(function(roomNameList) {
+        roomNameList.forEach((roomName, i) => {
+          _databaseGetChatTime(roomName, function(chatInfo) {
+            const selectedRoom = _commonGetCommonInfo("selectedRoom");
+            if(chatInfo.date > Date.now() && selectedRoom != roomName) {
+              var routeReplace = selectedRoom != "" ? true : false;
+              notify(roomName, chatInfo, routeReplace);
+            }
+          });
+        });
+
         _commonSetCommonInfo("roomList", roomNameList);
+
         drawRoomList(roomNameList);
       });
     }
@@ -35,16 +46,6 @@ function Room() {
       alert("모든 방에 권한이 없습니다.\n관리자에게 문의해주세요.");
       _authLogout();
     }else {
-
-      roomNameList.forEach((roomName, i) => {
-        _databaseGetChatTime(roomName, function(chatInfo) {
-          const selectedRoom = _commonGetCommonInfo("selectedRoom");
-          if(chatInfo.date > Date.now() && selectedRoom != roomName) {
-            var routeReplace = selectedRoom != "" ? true : false;
-            notify(roomName, chatInfo, routeReplace);
-          }
-        });
-      });
 
       const myList = () => {
         const list = roomNameList.map((roomName, index) => (
