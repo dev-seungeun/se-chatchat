@@ -1,20 +1,22 @@
 # SE React Chatting App
 
 <br/>
-
-## Local
-
-`npm run start`
-
-> http://localhost:3000
+## First Install ##
+`yarn add react-script`
+`npm install`
 
 
 <br/>
 
+## Local
+`npm run start`
+> http://localhost:3000
 
-## Firebase 배포
-
+<br/>
+## Build
 `npm run build`
-`firebase deploy`
 
+<br/>
+## Firebase 배포
+`firebase deploy`
 > https://sesh-chatchat.web.app/
