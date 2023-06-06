@@ -3,10 +3,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { _commonGetCommonInfo, _commonSetCommonInfo, _commonHandleUserTheme } from "../helpers/common";
 import { _authLogout, _authGetCurrentUser } from "../helpers/auth";
 import { _storageSendImg, _storageDownloadImg } from "../helpers/storage";
-import { _databaseGetRoomAuth, _databaseSendChat, _databaseUpdateChatTime, _databaseGetAddedChats, _databaseGetCountChats, _databaseUpdateUserProfile } from "../helpers/database";
+import { _databaseGetRoomAuth, _databaseSendChat, _databaseUpdateChatTime, _databaseGetAddedChats, _databaseUpdateUserProfile, _databaseGetChatDayList, _databaseRemoveChat } from "../helpers/database";
 import { _sendNotification, _removeRoomNotifys } from "../helpers/useNotification";
 import ChatItem from "../components/ChatItem"
-import "../chat.css";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import "../style/chat.css";
 
 function Chat() {
 
@@ -25,10 +26,19 @@ function Chat() {
   const [src, setSrc] = useState("");
   const [imgFile, setImgFile] = useState();
   const [focused, setFocused] = useState(true);
+  const [isOwner, setIsOwner] = useState(false);
+  const [dateList, setDateList] = useState([]);
+  const [chatDate, setChatDate] = useState("");
+  const [emptyToday, setEmptyToday] = useState(false);
 
   const setChatUI = (dbChatObj) => {
 
-    chatTemp = chatTemp.concat(dbChatObj);
+    if(dbChatObj == null) {
+      chatTemp = [];
+    }else {
+      chatTemp = chatTemp.concat(dbChatObj);
+    }
+
     setChatList(chatTemp);
 
     if(!document.hasFocus() && isMount && notifyStart) {
@@ -61,7 +71,6 @@ function Chat() {
 
   const sendMsg = async (message, imgUrl) => {
     try {
-
       await _databaseSendChat(roomName,
       {
         uid: _authGetCurrentUser().uid,
@@ -85,19 +94,19 @@ function Chat() {
     }
   }
 
-  const sendImg = () => {
+  const sendImg = (e) => {
     try {
-      LoadingWithMask();
+      LoadingWithMask(e);
       _storageSendImg(roomName, imgFile, function(fileName) {
         if(fileName != undefined) {
-          document.getElementById("input-image").style.display = "none";
+          handleShowElement(e, "input-image", false);
           sendMsg("image_send_check:"+fileName, src);
           setSrc("");
         }else {
           alert("Upload Failed")
         }
 
-        closeLoadingWithMask();
+        closeLoadingWithMask(e);
 
       })
     } catch (error) {
@@ -148,17 +157,19 @@ function Chat() {
       }else if(!Object.keys(roomAuth).includes(_authGetCurrentUser().uid)) {
         alert("'"+roomName+"'방에 권한이 없습니다.");
         navigate("/room");
+      }else {
+        if(roomAuth[_authGetCurrentUser().uid] == "owner") {
+          setIsOwner(true);
+        }
       }
-    })
+    });
+
     handleTheme(null, true, function() {
-      _databaseGetAddedChats(roomName, setChatUI)
-      .then((result) => {
-        notifyStart = result;
-        setShowScreen(true);
-      });
       document.addEventListener("keydown", escFunction, false);
       window.onfocus = focusFunction;
       window.onblur = blurFunction;
+      refreshDateList();
+      setShowScreen(true);
     });
 
     return() => {
@@ -166,7 +177,6 @@ function Chat() {
       document.removeEventListener("keydown", escFunction, false);
     }
   }, [roomName]);
-
 
   useEffect(() => {
     if(chatList.length > 0) {
@@ -180,6 +190,20 @@ function Chat() {
     // console.log(backId);
   }, [replyInfo,reply,backId]);
 
+  // dateList 업데이트시 오늘날짜로 채팅셋팅
+  useEffect(() => {
+    if(dateList != null) {
+      var today = getToday();
+      _databaseGetAddedChats(roomName, today, setChatUI)
+          .then((result) => {
+              notifyStart = result;
+              if(dateList.includes(today)) {
+                setChatDate(today);
+              }
+          });
+    }
+  }, [dateList]);
+
   useEffect(() => {
     if(showScreen)  {
       scrollToBottom(0, "auto");
@@ -190,7 +214,9 @@ function Chat() {
   const escFunction = useCallback((event) => {
     if(event.keyCode === 27) {
       setSrc("");
-      document.getElementById("input-image").style.display = "none";
+      handleShowElement(e, "input-image", false);
+      handleShowElement(e, "dateList", false);
+      handleShowElement(e, "threeDotsMenu", false);
     }
   }, []);
 
@@ -215,6 +241,40 @@ function Chat() {
       await _authLogout();
     } catch (error) {
      console.log(error);
+    }
+  };
+
+  const handleShowElement = (e, id, show) => {
+    var element = document.getElementById(id);
+    if(element) {
+      var show = show == undefined ? element.style.display=='none' : show;
+      show ? element.style.display = (id == 'dateList' ? 'flex' : 'block') : element.style.display = 'none';
+    }
+  };
+
+  const changeDate = (e, date) => {
+    handleShowElement(e, "dateList", false);
+    if(date.date != getToday()) {
+      document.getElementById("textarea").disabled = true;
+      document.getElementById("file_input").disabled = true;
+      document.getElementById("textarea").style.cursor = "not-allowed";
+      document.getElementById("fileSpan").style.cursor = "not-allowed";
+    }else {
+      document.getElementById("textarea").disabled = false;
+      document.getElementById("file_input").disabled = false;
+      document.getElementById("textarea").style.cursor = "auto";
+      document.getElementById("fileSpan").style.cursor = "pointer";
+    }
+
+    if(emptyToday && date.date == getToday()) {
+      setChatUI(null);
+    }else {
+      _databaseGetAddedChats(roomName, date.date, setChatUI)
+          .then((result) => {
+              notifyStart = result;
+              setShowScreen(true);
+              setChatDate(date.date);
+          });
     }
   };
 
@@ -254,6 +314,9 @@ function Chat() {
     if(document.getElementById("rmenu")) {
       document.getElementById("rmenu").className = "right_btn_hide";
     }
+
+    handleShowElement(e, "dateList", false);
+    handleShowElement(e, "threeDotsMenu", false);
   }
 
   const handleRightMenu = (e) => {
@@ -283,7 +346,25 @@ function Chat() {
       }
       callback && callback();
     })
-  }
+  };
+
+  const handleChatRemove = (e) => {
+    handleShowElement(e, "threeDotsMenu", false);
+
+    if(chatDate == getToday()) {
+      return alert("당일대화는 삭제 할 수 없습니다.");
+    }
+
+    var check = confirm("'"+chatDate+"' 의 대화를 삭제하시겠습니까?");
+
+    if(check) {
+      LoadingWithMask(e);
+      _databaseRemoveChat(roomName, chatDate, function () {
+        refreshDateList();
+        closeLoadingWithMask(e);
+      });
+    }
+  };
 
   const handleOnPaste = (e) => {
     const items = (event.clipboardData || event.originalEvent.clipboardData).items;
@@ -299,15 +380,14 @@ function Chat() {
       const reader = new FileReader();
       reader.onload = function (event) {
         setSrc(event.target.result);
-        document.getElementById("input-image").style.display = "block";
+        handleShowElement(e, "input-image", true);
       };
       reader.readAsDataURL(blob);
 
       var file = new File([blob], Date.now()+Math.floor(Math.random()*100));
       setImgFile(file);
     }
-
-  }
+  };
 
   const handleChangeFile = (e) => {
     for(var i=0;i<e.target.files.length;i++){
@@ -319,7 +399,7 @@ function Chat() {
           if (base64) {
             var base64Str = base64.toString()
             setSrc(base64Str);
-            document.getElementById("input-image").style.display = "block";
+            handleShowElement(e, "input-image", true);
 
            // Base64 to File
             var arr = base64Str.split(","),
@@ -355,16 +435,29 @@ function Chat() {
     return today;
   }
 
-  const LoadingWithMask = () => {    
-    document.getElementById("loadingMask").style.display = "block";  
+  const refreshDateList = (e) => {
+    _databaseGetChatDayList(roomName, function(dateList) {
+      dateList = dateList == null ? [] :  Object.keys(dateList);
+      var today = getToday();
+      if(!dateList.includes(today)) {
+          setEmptyToday(true);
+          dateList.push(today);
+      }
+      setDateList(dateList);
+    });
   };
 
-  const closeLoadingWithMask = () => {    
-    document.getElementById("loadingMask").style.display = "none";
+  const LoadingWithMask = (e) => {
+    handleShowElement(e, "loadingMask", true);
+  };
+
+  const closeLoadingWithMask = (e) => {
+    handleShowElement(e, "loadingMask", false);
   };
 
   const openImageModal = (e) => {
-    document.getElementById("modal").style.display = "block";
+    handleShowElement(e, "modal", true);
+
     let imgSrc;
 
     if(themeInfo.theme == "light") {
@@ -373,10 +466,17 @@ function Chat() {
       imgSrc = document.getElementById(e.currentTarget.id).firstChild.innerHTML;
     }
     document.getElementById("modalBoxImg").src = imgSrc;
+    if(window.outerHeight < document.getElementById("modalBoxImg").height) {
+      document.getElementById("modalBoxImg").style.width = "auto";
+      document.getElementById("modalBoxImg").style.height = "100%";
+    }else {
+      document.getElementById("modalBoxImg").style.height = "auto";
+      document.getElementById("modalBoxImg").style.width = "100%";
+    }
   };
 
   const closeImageModal = (e) => {
-    document.getElementById("modal").style.display = "none";
+    handleShowElement(e, "modal", false);
   };
 
   const goToReplyMsg = (e, id) => {
@@ -442,24 +542,17 @@ function Chat() {
     showScreen &&
     <div id="chat_wrap" className="chat_wrap" data-theme={themeInfo.theme} style={{visibility:"hidden"}}>
       <div className="header">
-        <button
-          className="mode"
-          type="button"
-          id="modeBtn"
-          onClick={handleTheme}>
-          {themeInfo.themeBtnValue}
-        </button>
+        <div id="threeDotsBtn">
+          <BsThreeDotsVertical onClick={(e)=>{
+            handleShowElement(e,"threeDotsMenu");
+            handleShowElement(e,"dateList", false);
+          }} />
+        </div>
         <div className="title">{roomName}</div>
-        <button
-          className="logout"
-          type="button"
-          onClick={handleLogOut}>
-          LOGOUT
-        </button>
       </div>
       <div id="chat" className="chat" onClick={handleMsgLeftClick} onScroll={getScrollPoistion}>
         <ul>
-          {chatList.map((chat, index) => {
+          {chatList && chatList.map((chat, index) => {
               return <ChatItem theme={themeInfo.theme}
                                chat={chat}
                                openImageModal={openImageModal}
@@ -490,7 +583,7 @@ function Chat() {
         <div id="image_upload">
           <label htmlFor="file_input">
             <img src="file_input.png" />
-            <span>FILE</span>
+            <span id="fileSpan">FILE</span>
           </label>
           <input id="file_input" type="file" accept="image/*" onChange={handleChangeFile} />
         </div>
@@ -502,19 +595,63 @@ function Chat() {
         </button>
       </div>
 
-      // loading
+      {/*threeDotsMenu*/}
+      <div id="threeDotsMenu" className="list" style={{display:"none"}}>
+        <ul>
+          <li className="date"
+              type="button"
+              onClick={(e)=>{
+                handleShowElement(e,"dateList", true);
+                handleShowElement(e,"threeDotsMenu", false);
+              }}>
+              DATE
+          </li>
+          <li className="mode"
+              type="button"
+              id="modeBtn"
+              onClick={handleTheme}>
+              {themeInfo.themeBtnValue}
+          </li>
+          <li className="logout"
+              type="button"
+              onClick={handleLogOut}>
+              LOGOUT
+          </li>
+            {isOwner &&
+            <li className="remove"
+                type="button"
+                id="removeBtn"
+                onClick={handleChatRemove}>
+                REMOVE
+            </li>
+            }
+        </ul>
+      </div>
+
+      {/*chat list*/}
+      <div id="dateList" className="list" style={{display:"none"}}>
+        <ul>
+          {dateList && dateList.map((date, index) => {
+              return <li key={index} onClick={(e)=>changeDate(e,{date})}>{date}</li>
+          })}
+        </ul>
+      </div>
+
+      {/*loading*/}
       <div id="loadingMask">
         <div></div>
         <img id="loadingImg" src={process.env.PUBLIC_URL+"/loader.gif"} />
       </div>
 
-    	<div id="modal" className="modal" onClick={closeImageModal}>
-    		<button onClick={closeImageModal}>&times;</button>
-    		<div id="modalBox" className="modalBox">
-    			<img id="modalBoxImg" src="" />
-    		</div>
-    	</div>
+      {/*limage box*/}
+      <div id="modal" className="modal" onClick={closeImageModal}>
+          <button onClick={closeImageModal}>&times;</button>
+          <div id="modalBox" className="modalBox">
+              <img id="modalBoxImg" src="" />
+          </div>
+      </div>
 
+      {/*reply*/}
       <div className="right_btn_hide" id="rmenu" onClick={handleRightMenu} data-reply={reply}>
         <ul>
           <li>

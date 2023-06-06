@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { getDatabase, ref, set, get, child, update, onChildAdded, onChildChanged, onValue, query, limitToLast } from "firebase/database";
+import { getDatabase, ref, set, get, child, update, remove, onChildAdded, onChildChanged, onValue, query, limitToLast } from "firebase/database";
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const firebaseConfig = {
@@ -34,6 +34,7 @@ export const database_set = set;
 export const database_get = get;
 export const database_child = child;
 export const database_update = update;
+export const database_remove = remove;
 export const database_query = query;
 export const database_limit_to_last= limitToLast;
 export const database_on_child_added = onChildAdded;

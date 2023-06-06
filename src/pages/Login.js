@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { _authSignIn, _authSignInWithGoogle } from "../helpers/auth";
-import "../login.css"
+import "../style/login.css"
 
 function Login() {
   const [email, setEmail] = useState("");

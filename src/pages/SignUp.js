@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { _authSignUp } from "../helpers/auth";
-import "../signup.css"
+import "../style/signup.css"
 
 function SignUp() {
   const [email, setEmail] = useState("");

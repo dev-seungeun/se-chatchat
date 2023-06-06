@@ -10,7 +10,7 @@ a { color: var(--main-color) }
 .right_btn_show li { list-style: none; }
 .right_btn_show a { border: 0 !important; text-decoration: none; }
 .right_btn_show a:hover { text-decoration: underline !important; }
-.logout:hover, .send:hover, .mode { cursor: pointer; }
+.send:hover, #threeDotsMenu, #threeDotsBtn, #dateList { cursor: pointer; }
 .chat_wrap { width:100%; }
 .chat_wrap .header {  position:fixed; width:100%; top:0; height:var(--main-header); font-size: 15px; background-color: black; color: var(--main-header-color); display: flex; align-items: center; }
 .chat_wrap .chat {  margin: var(--main-header) 0 var(--main-bottom) 0; overflow-y: auto; height: calc(100% - var(--main-bottom) - var(--main-header)); background-color: var(--main-background-color) }
@@ -26,12 +26,20 @@ a { color: var(--main-color) }
 .chat_wrap #back_reply { position: fixed; bottom: var(--main-bottom); margin-bottom: 10px; font-size: 10px; text-align: center; width: 100%; cursor: pointer; }
 .chat_wrap #back_reply > span { color: var(--main-background-color); background-color: var(--main-color); padding: 3px 7px; border-radius: 4px; }
 .chat_wrap .input-image { display: none; position:fixed; bottom: var(--main-bottom); right: 10px; margin-bottom: 5px; width:150px }
-.chat_wrap .logout { position: fixed;	background: var(--main-background-color);	color: var(--main-color);	border: none;	right: 5px;	font-size:10px;	width: 55px;	height: 20px; }
-.chat_wrap .mode {	position: fixed;	background: var(--main-background-color);	color: var(--main-color);	border: none;	right:70px;	font-size:10px;	width: 45px;	height: 20px; }
+/*.chat_wrap .logout { position: fixed; background: var(--main-background-color); color: var(--main-color); border: none;	right: 5px;	font-size:10px;	width: 55px; height: 20px; }*/
+/*.chat_wrap .mode {	position: fixed; background: var(--main-background-color); color: var(--main-color); border: none; right:70px; font-size:10px; width: 45px;	height: 20px; }*/
+.chat_wrap #threeDotsBtn { position: fixed; color: #FFF; right: 5px; }
+.chat_wrap #threeDotsMenu { position: fixed; top: 10px; right: 25px; }
+.chat_wrap #threeDotsMenu ul li { width: 100px; }
+.chat_wrap #dateList { position: fixed; top: 45%; left: 50%; transform: translate(-50%, -50%); height: 50%; overflow: auto; display: flex; align-items: center; }
+.chat_wrap #dateList ul { color: var(--main-background-color); background-color: var(--main-color); }
+.chat_wrap #dateList ul li { padding: 10px 0; width: 250px; }
+.chat_wrap .list ul { list-style: none; border: 1px solid #ccc; border-radius: 0.5em; background-color: #FFF; font-size: 12px; text-align: center; }
+.chat_wrap .list ul li { border-top: 1px solid #ccc; padding: 5px 0; }
+.chat_wrap .list ul li:first-child { border-top: 0; }
 .modal { display: none; z-index: 500;	width: 100%; height: 100%; position: fixed; top: 0; left: 0; background-color: rgba(0, 0, 0, 0.8); }
-.modal button {	z-index: 20; position: absolute;	top: 5%;	right: 5%;	background: transparent; border: 0; color: white; font-size: 3rem; cursor: pointer; }
-.modalBox {	position: relative;	top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%;	text-align: center; }
-.modalBox img {	width: 100%; }
+.modal button {	z-index: 20; position: absolute; top: 5%; right: 5%; background: transparent; border: 0; color: white; font-size: 3rem; cursor: pointer; }
+.modalBox {	position: relative;	top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; text-align: center; }
 .modalBox p {	color: #ffffff;	background-color: #000;	font-size: 2rem;	padding: .2rem; }
 #file_input { display: none; }
 #loadingMask { display: none }

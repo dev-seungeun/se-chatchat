@@ -2,7 +2,7 @@
 
 <br/>
 
-## First Start
+## First Start (Project Setting)
 `yarn add react-script`<br/>
 `npm install`
 

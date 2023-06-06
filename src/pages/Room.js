@@ -4,7 +4,7 @@ import { _commonGetCommonInfo, _commonSetCommonInfo } from "../helpers/common";
 import { _databaseGetRoomList, _databaseGetChatTime } from "../helpers/database";
 import { _authLogout, _authGetCurrentUser } from "../helpers/auth";
 import { _sendNotification } from "../helpers/useNotification";
-import "../rooms.css"
+import "../style/rooms.css"
 
 function Room() {
 

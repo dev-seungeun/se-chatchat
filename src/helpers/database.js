@@ -1,5 +1,7 @@
-import { database, database_ref, database_set, database_get, database_child, database_update, database_query,
-         database_limit_to_last, database_on_child_added, database_on_child_changed, database_on_value } from "../services/firebase";
+import {
+    database, database_ref, database_set, database_get, database_child, database_update, database_query,
+    database_limit_to_last, database_on_child_added, database_on_child_changed, database_on_value, database_remove
+} from "../services/firebase";
 import { _commonGetCommonInfo, _commonSetCommonInfo } from "./common"
 import { _authGetCurrentUser } from "./auth"
 
@@ -68,16 +70,27 @@ export function _databaseSendChat(roomName, data) {
   });
 }
 
-export async function _databaseGetAddedChats(roomName, callback) {
-    const date = new Date();
-    const today = date.getFullYear()+""+("0" + (date.getMonth() + 1)).slice(-2)+""+("0" + date.getDate()).slice(-2);;
-    const chatRef = database_query(database_ref(database, "chats/rooms/"+roomName+"/messages/"+today), database_limit_to_last(50));
+export async function _databaseGetAddedChats(roomName, stdDate, callback) {
+    const chatRef = database_query(database_ref(database, "chats/rooms/"+roomName+"/messages/"+stdDate), database_limit_to_last(50));
     await database_on_child_added(chatRef, (snapshot) => {
       if(snapshot.val().hasOwnProperty("uid")) {
         callback(snapshot.val());
       }
     });
     return true;
+}
+
+export function _databaseGetChatDayList(roomName, callback) {
+    database_get(database_child(database_ref(database), "chats/rooms/"+roomName+"/messages")).then((snapshot) => {
+        callback(snapshot.val());
+    });
+}
+
+export function _databaseRemoveChat(roomName, date, callback) {
+    var chatRef = database_ref(database, "chats/rooms/"+roomName+"/messages/"+date);
+    database_remove(chatRef).then(() => {
+        callback();
+    });
 }
 
 // export function _databaseGetCountChats(roomName, callback) {
