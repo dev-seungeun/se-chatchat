@@ -3,13 +3,13 @@
 <br/>
 
 ## First Start
-`yarn add react-script`
+`yarn add react-script` 
 `npm install`
 
 <br/>
 
 ## Local
-`npm run start`
+`npm start`
 > http://localhost:3000
 
 <br/>
