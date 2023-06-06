@@ -12,8 +12,6 @@
 `npm start`
 > http://localhost:3000
 
-<br/>
-
 ## Build
 `npm run build`
 
