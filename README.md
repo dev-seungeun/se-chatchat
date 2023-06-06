@@ -1,6 +1,5 @@
 # SE React Chatting App
 
-<br/>
 ## First Start
 `yarn add react-script`
 `npm install`
