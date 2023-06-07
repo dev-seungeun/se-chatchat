@@ -20,6 +20,8 @@ function Room() {
 
     if(savedRoomList.length > 0) {
       drawRoomList(savedRoomList);
+        console.log("savedRoomList??")
+
     }else {
       _databaseGetRoomList(function(roomNameList) {
         roomNameList.forEach((roomName, i) => {
@@ -27,9 +29,9 @@ function Room() {
             const selectedRoom = _commonGetCommonInfo("selectedRoom");
             if(chatInfo.date > Date.now() && selectedRoom != roomName) {
               var routeReplace = selectedRoom != "" ? true : false;
-              notify(roomName, chatInfo, routeReplace);
+              //notify(roomName, chatInfo, routeReplace);
             }
-          });
+          })
         });
 
         _commonSetCommonInfo("roomList", roomNameList);
@@ -71,14 +73,16 @@ function Room() {
   const notify = (roomName, chat, replace) => {
     if(chat.uid !== _authGetCurrentUser().uid) {
       console.log("NOTI > from wating room ["+roomName+"] > "+chat.email);
-      const res = _sendNotification("SESH", {
+      _sendNotification("SESH", {
         body: chat.email,
         roomName : roomName
-      },function(enterRoomName) {
-        console.log("["+enterRoomName+"] 입장")
-        _commonSetCommonInfo("selectedRoom", enterRoomName);
-        navigate(`/chat/${enterRoomName}`, {replace: replace});
-      });
+      }
+      // ,function(enterRoomName) {
+      //   console.log("["+enterRoomName+"] 입장")
+      //   _commonSetCommonInfo("selectedRoom", enterRoomName);
+      //   navigate(`/chat/${enterRoomName}`, {replace: replace});
+      // }
+      );
     }
   }
 

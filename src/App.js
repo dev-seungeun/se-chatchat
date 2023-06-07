@@ -9,71 +9,71 @@ import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 
 const initialState = {
-  authenticated: false,
-  loading: true
+    authenticated: false,
+    loading: true
 };
 
 function reducer(state, action) {
-  switch (action.type) {
-    case "GET_USER":
-      return { ...state, authenticated: action.result };
-    default:
-      return state;
-  }
+    switch (action.type) {
+        case "GET_USER":
+            return { ...state, authenticated: action.result };
+        default:
+            return state;
+    }
 }
 
 function App() {
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const { authenticated } = state;
+    const [state, dispatch] = useReducer(reducer, initialState);
+    const { authenticated } = state;
 
-  useEffect(() => {
-    _authStateChagned(function(user) {
-      if (user) {
-        dispatch({
-          type: "GET_USER",
-          result: true,
+    useEffect(() => {
+        _authStateChagned(function(user) {
+            if (user) {
+                dispatch({
+                    type: "GET_USER",
+                    result: true,
+                });
+            } else {
+                dispatch({
+                    type: "GET_USER",
+                    result: false,
+                });
+            }
         });
-      } else {
-        dispatch({
-          type: "GET_USER",
-          result: false,
-        });
-      }
-    });
-  }, []);
+    }, []);
 
-  return (
-    <HashRouter>
-      <Routes>
+    return (
+        <HashRouter>
+            <Routes>
 
-        <Route
-          path="/"
-          element={<PublicRoute authenticated={authenticated} component={Login} exact  />}
-        />
+                <Route
+                    path="/"
+                    element={<PublicRoute authenticated={authenticated} component={Login} exact  />}
+                />
 
-        <Route
-          path="/signup"
-          element={<PublicRoute authenticated={authenticated} component={SignUp} />}
-        />
+                <Route
+                    path="/signup"
+                    element={<PublicRoute authenticated={authenticated} component={SignUp} />}
+                />
 
-        <Route
-          path="/login"
-          element={<PublicRoute authenticated={authenticated} component={Login} />}
-        />
+                <Route
+                    path="/login"
+                    element={<PublicRoute authenticated={authenticated} component={Login} />}
+                />
 
-        <Route
-          path="/chat/:roomName"
-          element={<PrivateRoute authenticated={authenticated} component={Chat} />}
-        />
+                <Route
+                    path="/chat/:roomName"
+                    element={<PrivateRoute authenticated={authenticated} component={Chat} />}
+                />
 
-        <Route
-          path="/room"
-          element={<PrivateRoute authenticated={authenticated} component={Room} />}
-        />
+                <Route
+                    path="/room"
+                    element={<PrivateRoute authenticated={authenticated} component={Room} />}
+                />
 
-      </Routes>
-    </HashRouter>
-  );
+            </Routes>
+        </HashRouter>
+    );
 }
 
 export default App;
