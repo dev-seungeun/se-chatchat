@@ -5,7 +5,6 @@ export function _storageSendImg(roomName, imgFile, callback) {
     const fileName = Date.now()+"_"+Math.floor(Math.random() * 100)+".png";
     storageUploadBytes(storageRef(storage, _commonGetToday()+"/"+roomName+"/images/"+fileName), imgFile)
         .then((snapshot) => {
-            console.log(snapshot);
             callback(fileName);
         })
         .catch((error) => {

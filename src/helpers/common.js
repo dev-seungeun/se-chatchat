@@ -2,14 +2,19 @@ import { _databaseGetUserProfile, _databaseUpdateUserProfile  } from "../helpers
 import { _authGetCurrentUser } from "../helpers/auth";
 
 const info = {
-    showLog: false,
+    showLog: true,
     chatDate: "",
     selectedRoom: "",
     themeInfo: {},
     theme_dark : {theme:"dark", themeBtnValue:"LIGHT"},
     theme_light: {theme:"light", themeBtnValue:"DARK"},
-    roomList: []
+    roomList: [],
+    chatFocused: false
 };
+
+export function _logger(msg, obj) {
+    info.showLog && console.log(msg, obj != undefined ? obj : "");
+}
 
 export function _commonHandleUserTheme(callback) {
     _databaseGetUserProfile(_authGetCurrentUser(), function(profile) {

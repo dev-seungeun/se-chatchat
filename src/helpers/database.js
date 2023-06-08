@@ -1,5 +1,5 @@
-import { database, dbRef, dbChild, dbGet, dbSet, dbUpdate, dbRemove, dbQuery, dbLimitToLast, dbOnChildAdded, dbOnChildChanged, dbOnValue, dbRemoveEventListener, dbRefOff } from "../services/firebase";
-import {_commonGetCommonInfo, _commonSetCommonInfo, _commonGetToday} from "./common"
+import { database, dbRef, dbChild, dbGet, dbSet, dbUpdate, dbRemove, dbQuery, dbLimitToLast, dbOnChildAdded, dbOnChildChanged, dbRemoveEventListener, dbOnValue, dbRefOff } from "../services/firebase";
+import { _commonGetCommonInfo, _commonSetCommonInfo, _commonGetToday } from "./common"
 import { _authGetCurrentUser } from "./auth"
 
 export function _databaseGetRoomList(callback) {
@@ -20,23 +20,6 @@ export function _databaseGetRoomAuth(roomName, callback) {
     });
 }
 
-// TODO
-export function _databaseGetChatTime(roomName, callback) {
-    const ref = dbRef(database, "chats/rooms/"+roomName+"/lastChat" );
-    dbOnChildChanged(ref, (snapshot) => {
-        callback(snapshot.val());
-    });
-}
-
-export function _databaseUpdateChatTime(roomName, currentUser) {
-    const ref = dbRef(database, "chats/rooms/"+roomName+"/lastChat");
-    return dbUpdate(ref, {
-        date: Date.now()+1000,
-        uid : currentUser.uid,
-        email: currentUser.email
-    });
-}
-
 export function _databaseGetUserProfile(currentUser, callback) {
     dbGet( dbChild( dbRef(database), "chats/profiles/"+currentUser.uid ) ).then((snapshot) => {
         callback(snapshot.val());
@@ -48,6 +31,33 @@ export function _databaseUpdateUserProfile(key, value, currentUser) {
     let tempObj = {};
     tempObj[key] = value;
     dbUpdate(ref, tempObj);
+}
+
+export function _databaseGetChatDayList(roomName, callback) {
+    dbGet( dbChild( dbRef(database), "chats/rooms/"+roomName+"/messages" ) ).then((snapshot) => {
+        callback(snapshot.val());
+    });
+}
+
+// TODO PAGING
+export function _databaseGetChatHistory(roomName, stdDate, callback) {
+    const url = "chats/rooms/"+roomName+"/messages/"+stdDate;
+    dbGet( dbQuery( dbChild( dbRef(database), url ), dbLimitToLast(50) ) ).then((snapshot) => {
+        Object.keys(snapshot.val()).forEach((sendTime) => {
+            callback(snapshot.val()[sendTime]);
+        });
+    });
+}
+
+export async function _databaseGetAddedChats(roomName, callback) {
+    const url = "chats/rooms/"+roomName+"/messages/"+_commonGetToday();
+    const ref = dbRef(database, url);
+    await dbOnChildAdded(ref, (snapshot) => {
+        if(snapshot.val().hasOwnProperty("uid")) {
+            callback(snapshot.val());
+        }
+    });
+    return true;
 }
 
 export function _databaseSendChat(roomName, data) {
@@ -62,36 +72,22 @@ export function _databaseSendChat(roomName, data) {
     });
 }
 
-// TODO
-export async function _databaseOffRef(roomName) {
-    const url = "chats/rooms/"+roomName+"/messages/"+_commonGetToday();
-    const ref = dbRef(database, url);
-    ref.off();
-}
-
-export async function _databaseGetAddedChats(roomName, callback) {
-    const url = "chats/rooms/"+roomName+"/messages/"+_commonGetToday();
-    const ref = dbRef(database, url);
-    await dbOnChildAdded(ref, (snapshot) => {
-        if(snapshot.val().hasOwnProperty("uid")) {
+export function _databaseGetChatTime(roomName, callback) {
+    // date만 바뀌면 여기서 date만 리턴됨 > lastChat 전체 조회 후 callback
+    const ref = dbRef(database, "chats/rooms/"+roomName+"/lastChat" );
+    dbOnChildChanged(ref, (snapshot) => {
+        dbGet( dbChild ( dbRef(database), "chats/rooms/"+roomName+"/lastChat" ) ).then((snapshot) => {
             callback(snapshot.val());
-        }
-    });
-    return true;
-}
-
-export function _databaseGetChatHistory(roomName, stdDate, callback) {
-    const url = "chats/rooms/"+roomName+"/messages/"+stdDate;
-    dbGet( dbChild( dbRef(database), url ) ).then((snapshot) => {
-        Object.keys(snapshot.val()).forEach((sendTime) => {
-            callback(snapshot.val()[sendTime]);
         });
     });
 }
 
-export function _databaseGetChatDayList(roomName, callback) {
-    dbGet( dbChild( dbRef(database), "chats/rooms/"+roomName+"/messages" ) ).then((snapshot) => {
-        callback(snapshot.val());
+export function _databaseUpdateChatTime(roomName, currentUser) {
+    const ref = dbRef(database, "chats/rooms/"+roomName+"/lastChat");
+    return dbUpdate(ref, {
+        date: Date.now()+1000,
+        uid : currentUser.uid,
+        email: currentUser.email
     });
 }
 
@@ -101,6 +97,13 @@ export function _databaseRemoveChat(roomName, date, callback) {
         callback();
     });
 }
+
+// TODO
+// export async function _databaseOffRef(roomName) {
+//     const url = "chats/rooms/"+roomName+"/messages/"+_commonGetToday();
+//     const ref = dbRef(database, url);
+//     ref.off();
+// }
 
 // export function _databaseGetCountChats(roomName, callback) {
 //   const date = new Date();

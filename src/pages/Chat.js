@@ -1,23 +1,21 @@
-import React, { useState, useHistory, useEffect, useRef, useCallback, useLocation } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { _commonGetCommonInfo, _commonSetCommonInfo, _commonHandleUserTheme, _commonGetToday } from "../helpers/common";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { _commonGetCommonInfo, _commonSetCommonInfo, _commonHandleUserTheme, _commonGetToday, _logger } from "../helpers/common";
 import { _authLogout, _authGetCurrentUser } from "../helpers/auth";
 import { _storageSendImg, _storageDownloadImg } from "../helpers/storage";
-import { _databaseGetRoomAuth,  _databaseUpdateUserProfile, _databaseGetChatDayList, _databaseSendChat, _databaseUpdateChatTime, _databaseGetChatHistory, _databaseGetAddedChats, _databaseRemoveChat, _databaseOffRef } from "../helpers/database";
-import { _sendNotification, _removeRoomNotifys } from "../helpers/useNotification";
+import { _databaseGetRoomAuth,  _databaseUpdateUserProfile, _databaseGetChatDayList, _databaseSendChat, _databaseUpdateChatTime, _databaseGetChatHistory, _databaseGetAddedChats, _databaseRemoveChat } from "../helpers/database";
 import ChatItem from "../components/ChatItem"
 import { BsThreeDotsVertical } from "react-icons/bs";
 import "../style/chat.css";
 
 function Chat() {
 
-    var isMount = true; // ?
-    var notifyStart = true;
+    var isMount = true;
     var chatTemp = [];
-    var navigate = useNavigate();
+    const navigate = useNavigate();
+    const location = useLocation();
     const messageRef = useRef();
     const roomName = useParams().roomName;
-    const [showScreen, setShowScreen] = useState(false);
     const [themeInfo, setThemeInfo] = useState({});
     const [reply, setReply] = useState(null);
     const [replyInfo, setReplyInfo] = useState(null);
@@ -25,53 +23,21 @@ function Chat() {
     const [chatList, setChatList] = useState([]);
     const [src, setSrc] = useState("");
     const [imgFile, setImgFile] = useState();
-    const [focused, setFocused] = useState(true);
     const [isOwner, setIsOwner] = useState(false);
     const [dateList, setDateList] = useState([]);
     const [emptyToday, setEmptyToday] = useState(false);
     const [isTodayChat, setIsTodayChat] = useState(true);
     const [childAdded, setChildAdded] = useState([]);
 
-    const log = (msg, obj) => {
-        _commonGetCommonInfo("showLog") && console.log(msg, obj != undefined ? obj : "");
-    }
-
     const setChatUI = (dbChatObj) => {
         if(isMount) {
             chatTemp = dbChatObj == null ? [] : chatTemp.concat(dbChatObj);
             setChildAdded(chatTemp);
-            // isMount && scrollToBottom(0);
-        }
-
-        if(!document.hasFocus() && notifyStart) {
-            notify(dbChatObj);
         }
     };
 
-    const notify = (chat) => {
-        log("notify()", chat);
-
-        if(chat.uid !== _authGetCurrentUser().uid) {
-            console.log("NOTI > from this room > "+chat.email);
-            _sendNotification("SESH", {
-                body: chat.email,
-                roomName : roomName
-            }
-            // , function(enterRoomName) {
-            //     var selectedRoom = _commonGetCommonInfo("selectedRoom");
-            //     if(selectedRoom == enterRoomName) {
-            //         _commonGetCommonInfo("chatDate") != _commonGetToday() && changeDate(null, {date: _commonGetToday()});
-            //     }else {
-            //         _commonSetCommonInfo("selectedRoom", enterRoomName);
-            //         navigate(`/chat/${enterRoomName}`, {replace: true});
-            //     }
-            // }
-            );
-        }
-    }
-
     const sendData = () => {
-        log("sendData()");
+        _logger("sendData()");
 
         var msgTxt = document.getElementById("textarea").value;
         if(msgTxt && msgTxt.trim() !== "") {
@@ -83,7 +49,7 @@ function Chat() {
     }
 
     const sendMsg = async (message, imgUrl) => {
-        log("sendMsg()", message);
+        _logger("sendMsg()", message);
 
         try {
             await _databaseSendChat(roomName,
@@ -95,7 +61,7 @@ function Chat() {
                     timestamp: Date.now(),
                     reply: reply ? reply : null
                 }).then(() => {
-                    log("  -> _databaseSendChat return", imgUrl);
+                    _logger("  -> _databaseSendChat return", imgUrl);
 
                     if(imgUrl == "") {
                         document.getElementById("textarea").value = "";
@@ -104,7 +70,7 @@ function Chat() {
                     }
             });
 
-            log("  -> _databaseUpdateChatTime excute");
+            _logger("  -> _databaseUpdateChatTime excute");
             _databaseUpdateChatTime(roomName, _authGetCurrentUser());
 
         } catch (error) {
@@ -113,7 +79,7 @@ function Chat() {
     }
 
     const sendImg = (e) => {
-        log("sendImg()");
+        _logger("sendImg()");
 
         try {
             loadingWithMask(e);
@@ -130,7 +96,7 @@ function Chat() {
 
             })
         } catch (error) {
-            console.log(error);
+            _logger(error);
         }
     }
 
@@ -144,8 +110,8 @@ function Chat() {
           loadingWithMask();
         }
         const id = "img_id_"+fileName;
-        console.log(id);
-        console.log(document.getElementById(id));
+        _logger(id);
+        _logger(document.getElementById(id));
         _storageDownloadImg(roomName, fileName, function(url) {
           if(url != undefined) {
             var downloadingImage = new Image();
@@ -170,10 +136,10 @@ function Chat() {
 
 // USE_EFFECT & USE_CALLBACK ---------------------------------------
     useEffect(() => {
-        log("useEffect() -> [roomName]");
+        _logger("useEffect() -> [roomName]");
 
         _databaseGetRoomAuth(roomName, function(roomAuth) {
-            log("  -> _databaseGetRoomAuth callback", Object.keys(roomAuth));
+            _logger("  -> _databaseGetRoomAuth callback", Object.keys(roomAuth));
 
             if(roomAuth == null) {
                 alert("'"+roomName+"'방이 존재하지 않습니다.");
@@ -189,90 +155,76 @@ function Chat() {
             }
         });
 
-        handleTheme(null, true, function() {
-            log("  -> handleTheme callback");
-
-            document.addEventListener("keydown", keyDownFunction, false);
-            window.onfocus = focusFunction;
-            window.onblur = blurFunction;
-            refreshDateList();
-            setShowScreen(true);
-        });
+        handleTheme(null, true);
+        document.addEventListener("keydown", keyDownFunction);
+        window.onfocus = focusFunction;
+        window.onblur = blurFunction;
+        refreshDateList(true);
 
         return() => {
-            log("useEffect() -> [roomName] -> return function");
+            _logger("useEffect() -> [roomName] -> return function");
 
             isMount = false;
-            document.removeEventListener("keydown", keyDownFunction, false);
+            document.removeEventListener("keydown", keyDownFunction);
         }
     }, [roomName]);
 
     useEffect(() => {
-        log("useEffect() -> [childAdded] // isTodayChat : ", isTodayChat);
+        _logger("useEffect() -> [location]", location);
+
+        if(location.state != null && location.state.hasOwnProperty("roomName") &&  location.state.roomName == roomName) {
+            changeDate(null, {date: _commonGetToday()});
+        }
+    }, [location]);
+
+    useEffect(() => {
+        _logger("useEffect() -> [childAdded] // isTodayChat : ", isTodayChat);
 
         if(isTodayChat) {
             setChatList(childAdded);
+            scrollToBottom(0, "auto");
         }
     }, [isTodayChat, childAdded]);
 
     useEffect(() => {
-        log("useEffect() -> [chatList] // length : ", chatList.length);
+        _logger("useEffect() -> [chatList] // length : ", chatList.length);
 
         if(chatList.length > 0) {
-            scrollToBottom(0);
         }
     }, [chatList]);
 
     useEffect(() => {
-        log("useEffect() -> [replyInfo, reply, backId]");
+        _logger("useEffect() -> [replyInfo, reply, backId]");
 
-        // console.log("reply:"+reply);
-        // console.log("replyInfo:"+replyInfo);
-        // console.log(backId);
+        // _logger("reply:"+reply);
+        // _logger("replyInfo:"+replyInfo);
+        // _logger(backId);
     }, [replyInfo,reply,backId]);
 
     // dateList 업데이트시 오늘날짜로 채팅셋팅
     useEffect(() => {
         if(dateList.length > 0) {
-            log("useEffect() -> [dateList]", dateList);
+            _logger("useEffect() -> [dateList]", dateList);
 
             if(dateList != null) {
                 var today = _commonGetToday();
-                log("  -> _databaseGetAddedChats excute");
+                _logger("  -> _databaseGetAddedChats excute");
                 _databaseGetAddedChats(roomName, setChatUI)
                     .then(() => {
-                        log("  -> _databaseGetAddedChats return : before callback");
+                        _logger("  -> _databaseGetAddedChats return : before callback");
 
-                        notifyStart = true;
                         _commonSetCommonInfo("chatDate", today);
                         setIsTodayChat(true);
                     });
             }
         }
-
-        return() => {
-            log("useEffect() -> [dateList] -> return function");
-
-            isMount = false;
-            document.removeEventListener("keydown", keyDownFunction, false);
-        }
-
     }, [dateList]);
 
-    useEffect(() => {
-        log("useEffect() -> [showScreen]", showScreen);
-
-        if(showScreen)  {
-            scrollToBottom(0, "auto");
-            document.getElementById("chat_wrap").style.visibility = "visible";
-        }
-    }, [showScreen]);
-
     const keyDownFunction = useCallback((e) => {
-        log("keyDownFunction()");
+        _logger("keyDownFunction()");
 
         if(e.keyCode === 27) {
-            log("  -> esc");
+            _logger("  -> esc");
 
             setSrc("");
             handleShowElement(e, "input-image", false);
@@ -282,18 +234,14 @@ function Chat() {
     }, []);
 
     const focusFunction = (e) => {
-         log("focusFunction()");
-
-        setFocused(true);
-        _removeRoomNotifys(roomName);
+         _logger("focusFunction()");
+         _commonSetCommonInfo("chatFocused", true);
     };
 
     const blurFunction = (e) => {
-        log("blurFunction()");
-
-        setFocused(false);
+        _logger("blurFunction()");
+        _commonSetCommonInfo("chatFocused", false);
     };
-
 
 
 // HANDLE  -------------------------------------------
@@ -302,22 +250,22 @@ function Chat() {
         _commonSetCommonInfo("showLog", !showLog);
         document.getElementById("logAble").innerText = (!showLog).toLocaleString();
 
-        log("handleShowLog()", !showLog);
+        _logger("handleShow_logger()", !showLog);
     };
 
     const handleSendMsg = async (e) => {
-        log("handleSendMsg()");
+        _logger("handleSendMsg()");
 
         sendData();
     };
 
     const handleLogOut = async (e) => {
-        log("handleLogOut()");
+        _logger("handleLogOut()");
 
         try {
             await _authLogout();
         } catch (error) {
-            console.log(error);
+            _logger(error);
         }
     };
 
@@ -328,11 +276,11 @@ function Chat() {
             show ? element.style.display = (id == 'dateList' ? 'flex' : 'block') : element.style.display = 'none';
         }
 
-        log("handleShowElement()", id, show);
+        _logger("handleShowElement()", id, show);
     };
 
     const changeDate = (e, date) => {
-        log("changeDate()", "date : " + date.date + " / chatDate : " + _commonGetCommonInfo("chatDate"));
+        _logger("changeDate()", "date : " + date.date + " / chatDate : " + _commonGetCommonInfo("chatDate"));
 
         handleShowElement(e, "dateList", false);
         if(date.date == _commonGetCommonInfo("chatDate")) {
@@ -353,14 +301,15 @@ function Chat() {
         }
 
         if(tempIsTodayChat && emptyToday) {
-            log("  -> chatList empty excute");
+            _logger("  -> chatList empty excute");
             chatTemp = [];
             setChatList([]);
         }else {
-            log("  -> _databaseGetChatHistory excute");
+            _logger("  -> _databaseGetChatHistory excute");
             _databaseGetChatHistory(roomName, date.date, function (dbChatObj) {
                 chatTemp = chatTemp.concat(dbChatObj);
                 setChatList(chatTemp);
+                scrollToBottom(0, "auto");
             });
             _commonSetCommonInfo("chatDate", date.date);
         }
@@ -387,7 +336,7 @@ function Chat() {
     }
 
     const handleMsgRightClick = (e, chatInfo) => {
-        log("handleMsgRightClick()", chatInfo);
+        _logger("handleMsgRightClick()", chatInfo);
 
         e.preventDefault();
         setReply(chatInfo.email+"-"+chatInfo.timestamp+"-"+chatInfo.message);
@@ -397,7 +346,7 @@ function Chat() {
     }
 
     const handleMsgLeftClick = (e, isClose) => {
-        log("handleMsgLeftClick()", isClose);
+        _logger("handleMsgLeftClick()", isClose);
 
         if(!replyInfo || isClose) {
             setReply(null);
@@ -414,7 +363,7 @@ function Chat() {
     }
 
     const handleRightMenu = (e) => {
-        log("handleRightMenu()");
+        _logger("handleRightMenu()");
 
         e && e.preventDefault();
         document.getElementById("rmenu").className = "right_btn_hide";
@@ -426,33 +375,25 @@ function Chat() {
         document.getElementById("textarea").focus();
     }
 
-    const handleTheme = (e, isInit, callback) => {
-        log("handleTheme()", isInit);
+    const handleTheme = (e, isInit) => {
+        _logger("handleTheme()", isInit);
 
         if(!isInit) {
-            log("  -> _databaseUpdateUserProfile excute");
+            _logger("  -> _databaseUpdateUserProfile excute");
             _databaseUpdateUserProfile("theme", themeInfo.theme == "dark" ? "light" : "dark", _authGetCurrentUser());
         }
 
-        if(document.getElementById("chat_wrap")) {
-            document.getElementById("chat_wrap").style.visibility = "hidden";
-        }
-
         _commonHandleUserTheme(function(userThemeObj) {
-            log("  -> _commonHandleUserTheme callback", userThemeObj.theme);
+            _logger("  -> _commonHandleUserTheme callback", userThemeObj.theme);
 
             setThemeInfo(userThemeObj);
-            handleMsgLeftClick();
             scrollToBottom(0, "auto");
-            if(document.getElementById("chat_wrap")) {
-                document.getElementById("chat_wrap").style.visibility = "visible";
-            }
-            callback && callback();
+            handleShowElement(e, "threeDotsMenu", false);
         })
     };
 
     const handleChatRemove = (e) => {
-        log("handleChatRemove()");
+        _logger("handleChatRemove()");
 
         handleShowElement(e, "threeDotsMenu", false);
 
@@ -466,7 +407,7 @@ function Chat() {
         if(check) {
             loadingWithMask(e);
             _databaseRemoveChat(roomName, chatDate, function () {
-                log("  -> _databaseRemoveChat callback");
+                _logger("  -> _databaseRemoveChat callback");
 
                 refreshDateList();
                 closeLoadingWithMask(e);
@@ -475,7 +416,7 @@ function Chat() {
     };
 
     const handleOnPaste = (e) => {
-        log("handleOnPaste()");
+        _logger("handleOnPaste()");
 
         const items = (event.clipboardData || event.originalEvent.clipboardData).items;
 
@@ -500,7 +441,7 @@ function Chat() {
     };
 
     const handleChangeFile = (e) => {
-        log("handleChangeFile()");
+        _logger("handleChangeFile()");
 
         for(var i=0;i<e.target.files.length;i++){
             if (e.target.files[i]) {
@@ -533,10 +474,11 @@ function Chat() {
         e.target.value = ""; // 같은 파일 upload를 위한 처리
     }
 
+
 // ETC ----------------------------------------------
 
     const scrollToBottom = (msTime, behavior) => {
-        log("scrollToBottom()", msTime, behavior);
+        _logger("scrollToBottom()", msTime, behavior);
 
         if(!messageRef.current) return;
         setTimeout(() => {
@@ -544,11 +486,11 @@ function Chat() {
         }, msTime);
     }
 
-    const refreshDateList = (e) => {
-        log("refreshDateList()");
+    const refreshDateList = (isInit) => {
+        _logger("refreshDateList()");
 
         _databaseGetChatDayList(roomName, function(dateList) {
-            log("  -> _databaseGetChatDayList callback");
+            _logger("  -> _databaseGetChatDayList callback");
 
             dateList = dateList == null ? [] :  Object.keys(dateList);
             var today = _commonGetToday();
@@ -569,7 +511,7 @@ function Chat() {
     };
 
     const openImageModal = (e) => {
-        log("openImageModal()");
+        _logger("openImageModal()");
 
         handleShowElement(e, "modal", true);
 
@@ -591,13 +533,13 @@ function Chat() {
     };
 
     const closeImageModal = (e) => {
-        log("closeImageModal()");
+        _logger("closeImageModal()");
 
         handleShowElement(e, "modal", false);
     };
 
     const goToReplyMsg = (e, id) => {
-        log("goToReplyMsg()", id);
+        _logger("goToReplyMsg()", id);
 
         e.preventDefault();
         if(document.getElementById(id) == null) {
@@ -618,7 +560,7 @@ function Chat() {
     }
 
     const goToBackReplyMsg = (e, id) => {
-        log("goToBackReplyMsg()", id);
+        _logger("goToBackReplyMsg()", id);
 
         var divTop = document.getElementById(backId).offsetTop-(themeInfo.theme == "dark" ? (window.innerHeight-45) : 80);
         $('#chat').scrollTop(divTop);
@@ -657,11 +599,12 @@ function Chat() {
             }
         }
     }
+
+
 // --------------------------------------------------
 
     return (
-        showScreen &&
-        <div id="chat_wrap" className="chat_wrap" data-theme={themeInfo.theme} style={{visibility:"hidden"}}>
+        <div id="chat_wrap" className="chat_wrap" data-theme={themeInfo.theme}>
             <div className="header">
                 <div id="threeDotsBtn">
                     <BsThreeDotsVertical onClick={(e)=>{
