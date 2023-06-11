@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {_commonGetCommonInfo, _commonGetToday, _commonSetCommonInfo, _logger} from "../helpers/common";
+import {_commonGetCommonInfo, _commonGetToday, _commonSetCommonInfo } from "../helpers/common";
 import { _databaseGetRoomList, _databaseGetChatTime } from "../helpers/database";
 import { _authLogout, _authGetCurrentUser } from "../helpers/auth";
 import { _sendNotification} from "../helpers/useNotification";
@@ -18,15 +18,15 @@ function Room() {
 
         if(savedRoomList.length > 0) {
             drawRoomList(savedRoomList);
-            _logger("savedRoomList", savedRoomList);
+            _commonGetCommonInfo("showLog") &&("savedRoomList", savedRoomList);
 
         }else {
             _databaseGetRoomList(function(roomNameList) {
-                _logger("  -> _databaseGetRoomList() callback", roomNameList);
+                _commonGetCommonInfo("showLog") &&("  -> _databaseGetRoomList() callback", roomNameList);
 
                 roomNameList.forEach((roomName, i) => {
                     _databaseGetChatTime(roomName, function(chatInfo) {
-                        _logger("  -> _databaseGetChatTime() callback", chatInfo);
+                        _commonGetCommonInfo("showLog") &&("  -> _databaseGetChatTime() callback", chatInfo);
 
                         const selectedRoom = _commonGetCommonInfo("selectedRoom");
                         if(chatInfo.date > Date.now() && (selectedRoom != roomName || !_commonGetCommonInfo("chatFocused") || _commonGetCommonInfo("chatDate") != _commonGetToday())) {

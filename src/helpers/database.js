@@ -1,9 +1,33 @@
-import { database, dbRef, dbChild, dbGet, dbSet, dbUpdate, dbRemove, dbQuery, dbLimitToLast, dbOnChildAdded, dbOnChildChanged, dbRemoveEventListener, dbOnValue, dbRefOff } from "../services/firebase";
+import { database, dbRef, dbChild, dbGet, dbSet, dbUpdate, dbRemove, dbQuery, dbOnChildAdded, dbOnChildChanged, dbRemoveEventListener, dbLimitToLast, dbEndAt, dbOrderByKey, dbOnValue, dbRefOff } from "../services/firebase";
 import { _commonGetCommonInfo, _commonSetCommonInfo, _commonGetToday } from "./common"
 import { _authGetCurrentUser } from "./auth"
 
+export function getRef(url) {
+    return dbRef(database, url);
+}
+
+export function get(url) {
+    return dbGet( dbChild( dbRef(database), url ) );
+}
+
+export function update(url, key, value) {
+    let tempObj = {};
+    tempObj[key] = value;
+    dbUpdate( dbRef(database, url), tempObj);
+}
+
+export function getPaging(url, from, listSize) {
+    if(from == null) {
+        return dbGet( dbQuery( getRef(url), dbOrderByKey(), dbLimitToLast(listSize) ) );
+    }else {
+        return dbGet( dbQuery( getRef(url), dbOrderByKey(), dbEndAt(from), dbLimitToLast(listSize) ) );
+    }
+}
+
 export function _databaseGetRoomList(callback) {
-    dbGet( dbChild( dbRef(database), "chats/rooms" ) ).then((snapshot) => {
+    const url = "chats/rooms";
+
+    get(url).then((snapshot) => {
         let roomNameList = [];
         Object.keys(snapshot.val()).forEach((roomName, index) => {
             if(snapshot.val()[roomName].members && Object.keys(snapshot.val()[roomName].members).includes(_authGetCurrentUser().uid)) {
@@ -15,54 +39,99 @@ export function _databaseGetRoomList(callback) {
 }
 
 export function _databaseGetRoomAuth(roomName, callback) {
-    dbGet( dbChild( dbRef(database), "chats/rooms/"+roomName+"/members" ) ).then((snapshot) => {
+    const url =  "chats/rooms/"+roomName+"/members";
+    get(url).then((snapshot) => {
         callback(snapshot.val());
     });
 }
 
 export function _databaseGetUserProfile(currentUser, callback) {
-    dbGet( dbChild( dbRef(database), "chats/profiles/"+currentUser.uid ) ).then((snapshot) => {
+    const url = "chats/profiles/"+currentUser.uid;
+    get(url).then((snapshot) => {
         callback(snapshot.val());
     });
 }
 
 export function _databaseUpdateUserProfile(key, value, currentUser) {
-    const ref = dbRef(database, "chats/profiles/"+currentUser.uid);
-    let tempObj = {};
-    tempObj[key] = value;
-    dbUpdate(ref, tempObj);
+    const url = "chats/profiles/"+currentUser.uid;
+    update(url, key, value);
 }
 
 export function _databaseGetChatDayList(roomName, callback) {
-    dbGet( dbChild( dbRef(database), "chats/rooms/"+roomName+"/messages" ) ).then((snapshot) => {
+    get("chats/rooms/"+roomName+"/messages").then((snapshot) => {
         callback(snapshot.val());
     });
 }
 
-// TODO PAGING
-export function _databaseGetChatHistory(roomName, stdDate, callback) {
+export function _databaseGetTotalCnt(roomName, stdDate, callback) {
+    get("chats/rooms/"+roomName+"/messages/").then((snapshot) => {
+        if(!Object.keys(snapshot.val()).includes(stdDate)) {
+            callback(0);
+        }else {
+            get("chats/rooms/"+roomName+"/messages/"+stdDate).then((snapshot) => {
+                callback(Object.keys(snapshot.val()).length);
+            });}
+    })
+}
+
+export function _databaseGetChatHistory(roomName, stdDate, pageFrom, pageSize, callback) {
     const url = "chats/rooms/"+roomName+"/messages/"+stdDate;
-    dbGet( dbQuery( dbChild( dbRef(database), url ), dbLimitToLast(50) ) ).then((snapshot) => {
-        Object.keys(snapshot.val()).forEach((sendTime) => {
-            callback(snapshot.val()[sendTime]);
+
+    getPaging(url, pageFrom, pageSize).then((snapshot) => {
+
+        var arr = Object.keys(snapshot.val());
+        var firstKey = arr[0];
+
+        var arr = Object.keys(snapshot.val());
+        if(arr.length >= pageSize) {
+            arr.shift();
+        }
+
+        // 마지막 대화쪽을 가져오기위해
+        var reverseArr = arr.reverse();
+        reverseArr.forEach((sendTime) => {
+            callback(snapshot.val()[sendTime], String(firstKey));
         });
+
     });
 }
 
-export async function _databaseGetAddedChats(roomName, callback) {
+export async function _databaseGetAddedChats(roomName, pageSize, totalCnt, callback) {
     const url = "chats/rooms/"+roomName+"/messages/"+_commonGetToday();
-    const ref = dbRef(database, url);
-    await dbOnChildAdded(ref, (snapshot) => {
+    var cnt = 0;
+    var pageFrom = null;
+
+    await dbOnChildAdded(getRef(url), (snapshot) => {
+
         if(snapshot.val().hasOwnProperty("uid")) {
-            callback(snapshot.val());
+            cnt++;
+
+            // 새로추가되는 채팅
+            if(totalCnt < cnt) {
+                callback(snapshot.val(), pageFrom);
+                
+            // 최초진입 채팅 노출
+            }else {
+
+                // 페이징 저장
+                if (totalCnt - cnt == pageSize) {
+                    pageFrom = String(snapshot.val().timestamp);
+                }
+                
+                // 최초 진입시에는 마지막쪽 대화만 pageSize만큼 노출
+                if (totalCnt - cnt < pageSize) {
+                    callback(snapshot.val(), pageFrom, true);
+                }
+            }
         }
     });
+
     return true;
 }
 
 export function _databaseSendChat(roomName, data) {
-    const ref = dbRef(database, "chats/rooms/"+roomName+"/messages/"+_commonGetToday()+"/"+data.timestamp);
-    return dbSet(ref, {
+    const url = "chats/rooms/"+roomName+"/messages/"+_commonGetToday()+"/"+data.timestamp;
+    return dbSet(getRef(url), {
         uid: data.uid,
         email: data.email,
         message: data.message,
@@ -74,8 +143,8 @@ export function _databaseSendChat(roomName, data) {
 
 export function _databaseGetChatTime(roomName, callback) {
     // date만 바뀌면 여기서 date만 리턴됨 > lastChat 전체 조회 후 callback
-    const ref = dbRef(database, "chats/rooms/"+roomName+"/lastChat" );
-    dbOnChildChanged(ref, (snapshot) => {
+    const url = "chats/rooms/"+roomName+"/lastChat";
+    dbOnChildChanged(getRef(url), (snapshot) => {
         dbGet( dbChild ( dbRef(database), "chats/rooms/"+roomName+"/lastChat" ) ).then((snapshot) => {
             callback(snapshot.val());
         });
@@ -83,8 +152,8 @@ export function _databaseGetChatTime(roomName, callback) {
 }
 
 export function _databaseUpdateChatTime(roomName, currentUser) {
-    const ref = dbRef(database, "chats/rooms/"+roomName+"/lastChat");
-    return dbUpdate(ref, {
+    const url = "chats/rooms/"+roomName+"/lastChat";
+    return dbUpdate(getRef(url), {
         date: Date.now()+1000,
         uid : currentUser.uid,
         email: currentUser.email
@@ -92,24 +161,19 @@ export function _databaseUpdateChatTime(roomName, currentUser) {
 }
 
 export function _databaseRemoveChat(roomName, date, callback) {
-    var ref = dbRef(database, "chats/rooms/"+roomName+"/messages/"+date);
-    dbRemove(ref).then(() => {
+    const url = "chats/rooms/"+roomName+"/messages/"+date;
+    dbRemove(getRef(url)).then(() => {
         callback();
     });
 }
 
-// TODO
-// export async function _databaseOffRef(roomName) {
-//     const url = "chats/rooms/"+roomName+"/messages/"+_commonGetToday();
-//     const ref = dbRef(database, url);
-//     ref.off();
-// }
-
-// export function _databaseGetCountChats(roomName, callback) {
-//   const date = new Date();
-//   const today = date.getFullYear()+""+("0" + (date.getMonth() + 1)).slice(-2)+""+("0" + date.getDate()).slice(-2);;
-//   const chatRef = dbQuery(dbRef(database, "chats/rooms/"+roomName+"/messages/"+today), limit_to_last(50));
-//   dbOnValue(chatRef, (snapshot) => {
-//     callback(Object.keys(snapshot.val()).length)
-//   });
-// }
+export function _databaseSaveChat(roomName, stdDate, data) {
+    const url = "chats/rooms/"+roomName+"/saveData/"+stdDate+"/"+data.timestamp;
+    return dbSet(getRef(url), {
+        uid: data.uid,
+        email: data.email,
+        message: data.message,
+        imgUrl: data.imgUrl,
+        timestamp: data.timestamp
+    });
+}

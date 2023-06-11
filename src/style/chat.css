@@ -5,15 +5,27 @@
 
 html, body { overflow: hidden; }
 a { color: var(--main-color) }
-.right_btn_hide, .hide { display: none; }
-.right_btn_show { z-index: 1000; position: absolute; background-color: white; border: 1px solid black; font-size: 10px; padding: 2px 4px; display: block; margin: 0; list-style-type: none; list-style: none; border-radius: 4px; cursor: pointer; }
-.right_btn_show li { list-style: none; }
-.right_btn_show a { border: 0 !important; text-decoration: none; }
-.right_btn_show a:hover { text-decoration: underline !important; }
-.send:hover, #threeDotsMenu, #threeDotsBtn, #dateList { cursor: pointer; }
+
+.modal { display: none; z-index: 500;	width: 100%; height: 100%; position: fixed; top: 0; left: 0; background-color: rgba(0, 0, 0, 0.8); }
+.modal button {	z-index: 20; position: absolute; top: 5%; right: 5%; background: transparent; border: 0; color: white; font-size: 3rem; cursor: pointer; }
+.modalBox {	position: relative;	top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; text-align: center; }
+.modalBox p {	color: #ffffff;	background-color: #000;	font-size: 2rem;	padding: .2rem; }
+
+#loadingMask { display: none }
+#loadingMask div { position:absolute; z-index:100; background-color:#000000; left:0; top:0; width: 100%; height: 100%; opacity: 0.5; }
+#loadingImg { position: absolute; width:70px; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; }
+
+.chat_wrap .right_btn_hide, .hide { display: none; }
+.chat_wrap .right_btn_show { z-index: 1000; position: absolute; background-color: white; border: 1px solid black; font-size: 10px; padding: 2px 4px; display: block; margin: 0; list-style-type: none; list-style: none; border-radius: 4px; cursor: pointer; }
+.chat_wrap .right_btn_show li { list-style: none; }
+.chat_wrap .right_btn_show a { border: 0 !important; text-decoration: none; }
+.chat_wrap .right_btn_show a:hover { text-decoration: underline !important; }
+.chat_wrap .send:hover, #threeDotsMenu, #threeDotsBtn, #dateList, #showMore { cursor: pointer; }
+.chat_wrap #chatDate { font-size:12px; }
 .chat_wrap { width:100%; }
 .chat_wrap .header {  position:fixed; width:100%; top:0; height:var(--main-header); font-size: 15px; background-color: black; color: var(--main-header-color); display: flex; align-items: center; }
-.chat_wrap .chat {  margin: var(--main-header) 0 var(--main-bottom) 0; overflow-y: auto; height: calc(100% - var(--main-bottom) - var(--main-header)); background-color: var(--main-background-color) }
+.chat_wrap .chat { margin: var(--main-header) 0 var(--main-bottom) 0; overflow-y: auto; height: calc(100% - var(--main-bottom) - var(--main-header)); background-color: var(--main-background-color) }
+/*.chat_wrap .chat.no_show_more { margin: var(--main-header) 0 var(--main-bottom) 0; overflow-y: auto; height: calc(100% - var(--main-bottom) - var(--main-header)); background-color: var(--main-background-color) }*/
 .chat_wrap .chat ul li > div { font-size: 10px;  }
 .chat_wrap .input-div { position:fixed; width:100%; bottom:0; height: var(--main-bottom); background-color: var(--main-background-color); border-top: 1px solid black; }
 .chat_wrap .input-div > textarea::-webkit-scrollbar { display: none; }
@@ -37,26 +49,20 @@ a { color: var(--main-color) }
 .chat_wrap .list ul { list-style: none; border: 1px solid #ccc; border-radius: 0.5em; background-color: #FFF; font-size: 12px; text-align: center; }
 .chat_wrap .list ul li { border-top: 1px solid #ccc; padding: 5px 0; }
 .chat_wrap .list ul li:first-child { border-top: 0; }
-.modal { display: none; z-index: 500;	width: 100%; height: 100%; position: fixed; top: 0; left: 0; background-color: rgba(0, 0, 0, 0.8); }
-.modal button {	z-index: 20; position: absolute; top: 5%; right: 5%; background: transparent; border: 0; color: white; font-size: 3rem; cursor: pointer; }
-.modalBox {	position: relative;	top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; text-align: center; }
-.modalBox p {	color: #ffffff;	background-color: #000;	font-size: 2rem;	padding: .2rem; }
-#file_input { display: none; }
-#loadingMask { display: none }
-#loadingMask div { position:absolute; z-index:100; background-color:#000000; left:0; top:0; width: 100%; height: 100%; opacity: 0.5; }
-#loadingImg { position: absolute; width:70px; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; }
+.chat_wrap #file_input { display: none; }
 
 
 /* BASIC */
-.chat_wrap[data-theme="light"] {
-  --main-background-color: white;
-  --main-color: black;
+[data-theme="light"] {
+    --main-background-color: white;
+    --main-color: black;
 	--main-header: 35px;
-  --main-header-color: white;
+    --main-header-color: white;
 	--main-bottom: 80px;
 	--main-reply: 81px;
 	--main-reply-x: 100px;
 	--main-input-padding: 10px 105px 10px 10px;
+    --main-show-more: 25px;
 }
 .chat_wrap[data-theme="light"] .title { width:100%; text-align: center; }
 .chat_wrap[data-theme="light"] .msg_reply { color: #D1B2FF; font-size: 10px; cursor: pointer; }
@@ -71,39 +77,22 @@ a { color: var(--main-color) }
 .chat_wrap[data-theme="light"] #reply-info { padding: 5px 10px;position:fixed; width:100%; bottom: var(--main-reply); background-color: var(--main-background-color); color: var(--main-color); border-top: 1px solid #353535; font-size: 10px; }
 .chat_wrap[data-theme="light"] #reply-info .reply-x { cursor: pointer; position:fixed; bottom: var(--main-reply-x); right: 10px; background-color: var(--main-background-color); color: var(--main-color); font-size: 10px; }
 .chat_wrap[data-theme="light"] #image_upload span { display: none; }
-.chat_wrap[data-theme="light"] #image_upload img {
-	position: fixed;
-	border: none;
-	bottom: 31px;
-	right: 80px;
-	width:16px;
-  cursor: pointer;
-}
-.chat_wrap[data-theme="light"] .send {
-	position: fixed;
-	background: var(--main-background-color);
-	color: var(--main-color);
-	border: none;
-	bottom: 27.5px;
-	right: 9px;
-	font-size:10px;
-	background-color: black;
-	color:white;
-	width:60px;
-	height:25px;
-}
+.chat_wrap[data-theme="light"] #image_upload img { position: fixed; border: none; bottom: 31px; right: 80px; width:16px; cursor: pointer; }
+.chat_wrap[data-theme="light"] .send { position: fixed; background: var(--main-background-color); color: var(--main-color); border: none; bottom: 27.5px; right: 9px; font-size:10px; background-color: black; color:white; width:60px; height:25px; }
+.chat_wrap[data-theme="light"] #showMore { background-color: var(--main-background-color); height: var(--main-show-more); margin: 10px auto; color: gray; border: 1px solid #B8B8B8; border-radius: 5px; padding: 0 10px; font-size:11px; }
 
 
 /* CMD MODE */
-.chat_wrap[data-theme="dark"] {
-  --main-background-color: black;
-  --main-color: white;
+[data-theme="dark"] {
+    --main-background-color: black;
+    --main-color: white;
 	--main-header: 30px;
-  --main-header-color: black;
+    --main-header-color: black;
 	--main-bottom: 30px;
 	--main-reply: 31px;
 	--main-reply-x: 50px;
 	--main-input-padding: 0 40px 0 0;
+    --main-show-more: 20px;
 }
 .chat_wrap[data-theme="dark"] .msg_reply { color: #D1B2FF; font-size: 10px; padding-right: 10px; cursor: pointer; }
 .chat_wrap[data-theme="dark"] .chat ul { width: 100%; list-style: none; }
@@ -117,12 +106,6 @@ a { color: var(--main-color) }
 .chat_wrap[data-theme="dark"] #reply-info .reply-x { cursor: pointer; position:fixed; bottom: var(--main-reply-x); right: 10px; background-color: var(--main-background-color); color: var(--main-color); font-size: 10px; }
 .chat_wrap[data-theme="dark"] .send { display: none; }
 .chat_wrap[data-theme="dark"] .image-upload img { display: none; }
-.chat_wrap[data-theme="dark"] #image_upload span {
-	position: fixed;
-	color: var(--main-color);
-	bottom: 8px;
-	right: 9px;
-	font-size:10px;
-	width:20px;
-  cursor: pointer;
-}
+.chat_wrap[data-theme="dark"] #image_upload span { position: fixed; color: var(--main-color); bottom: 8px; right: 9px; font-size:10px; width:20px; cursor: pointer; }
+.chat_wrap[data-theme="dark"] #showMore { background-color: var(--main-background-color); height: var(--main-show-more); margin: auto; color: gray; border: none; font-size:11px; }
+
