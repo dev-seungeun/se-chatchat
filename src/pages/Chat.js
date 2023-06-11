@@ -13,7 +13,7 @@ function Chat() {
     var isMount = true;
     var chatTemp = [];
 
-    const pageSize = 50;
+    const pageSize = 51;
     const navigate = useNavigate();
     const location = useLocation();
     const messageRef = useRef();
@@ -180,10 +180,16 @@ function Chat() {
         }
     }, [roomName]);
 
+
+    // 현재방의 과거날짜의 대화창에서, 현재 방에서 메시지 오면 changeDate(today)
     useEffect(() => {
         _commonGetCommonInfo("showLog") && console.log("useEffect() -> [location]", location);
 
-        if(location.state != null && location.state.hasOwnProperty("roomName") &&  location.state.roomName == roomName) {
+        // 20230611
+        // TODO : 방에있을때 노티가 와서 누르면 Added 도 불리는데 여기서 changeDate 하면서 History 가 또 불려서 두번 반복 노출됨
+        //        > 룸에서 왔을때는 History를 안부르던가 해야하는데 어케 판단해야할지 모르겠음
+        if(location.state != null && location.state.hasOwnProperty("roomName") &&  location.state.roomName == roomName
+                && _commonGetCommonInfo("chatDate") != _commonGetToday()) {
             changeDate(null, {date: _commonGetToday()});
         }
     }, [location]);
@@ -329,7 +335,8 @@ function Chat() {
 
         checkTotalCnt(function () {
 
-            if(tempIsTodayChat && emptyToday) {
+            // 오늘채팅으로 변경했는데 대화내역이없을때
+            if((tempIsTodayChat && emptyToday)) {
                 _commonGetCommonInfo("showLog") && console.log("  -> chatList empty excute");
                 chatTemp = [];
                 setChatList([]);
