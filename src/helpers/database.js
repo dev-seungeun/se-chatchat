@@ -65,7 +65,7 @@ export function _databaseGetChatDayList(roomName, callback) {
 
 export function _databaseGetTotalCnt(roomName, stdDate, callback) {
     get("chats/rooms/"+roomName+"/messages/").then((snapshot) => {
-        if(!Object.keys(snapshot.val()).includes(stdDate)) {
+        if(snapshot.val() == null || !Object.keys(snapshot.val()).includes(stdDate)) {
             callback(0);
         }else {
             get("chats/rooms/"+roomName+"/messages/"+stdDate).then((snapshot) => {
