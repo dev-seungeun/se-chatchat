@@ -21,6 +21,8 @@ function Room() {
             _commonGetCommonInfo("showLog") &&("savedRoomList", savedRoomList);
 
         }else {
+            _commonGetCommonInfo("showLog") &&("  -> _databaseGetRoomList() excute");
+
             _databaseGetRoomList(function(roomNameList) {
                 _commonGetCommonInfo("showLog") &&("  -> _databaseGetRoomList() callback", roomNameList);
 
@@ -82,7 +84,8 @@ function Room() {
                 ,function(enterRoomName) {
                   console.log("ENTER ["+enterRoomName+"] BY NOTIFICATION")
                   _commonSetCommonInfo("selectedRoom", enterRoomName);
-                  navigate(`/chat/${enterRoomName}?${chat.date}`, {replace: noBackReplace, state: {roomName: enterRoomName}});
+                  var beforeEnterApp = _commonGetCommonInfo("beforeEnterApp");
+                  navigate(`/chat/${enterRoomName}?${chat.date}`, {replace: noBackReplace, state: {roomName: enterRoomName, beforeEnterApp: beforeEnterApp}});
                 }
             );
         }

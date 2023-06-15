@@ -15,6 +15,7 @@ a { color: var(--main-color) }
 #loadingMask div { position:absolute; z-index:100; background-color:#000000; left:0; top:0; width: 100%; height: 100%; opacity: 0.5; }
 #loadingImg { position: absolute; width:70px; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; }
 
+#cover { position:fixed; width:100%; height:100%; top:0; z-index:2000; background-color:white }
 .chat_wrap .right_btn_hide, .hide { display: none; }
 .chat_wrap .right_btn_show { z-index: 1000; position: absolute; background-color: white; border: 1px solid black; font-size: 10px; padding: 2px 4px; display: block; margin: 0; list-style-type: none; list-style: none; border-radius: 4px; cursor: pointer; }
 .chat_wrap .right_btn_show li { list-style: none; }
@@ -23,7 +24,7 @@ a { color: var(--main-color) }
 .chat_wrap .send:hover, #threeDotsMenu, #threeDotsBtn, #dateList, #showMore { cursor: pointer; }
 .chat_wrap #chatDate { font-size:12px; }
 .chat_wrap { width:100%; }
-.chat_wrap .header {  position:fixed; width:100%; top:0; height:var(--main-header); font-size: 15px; background-color: black; color: var(--main-header-color); display: flex; align-items: center; }
+.chat_wrap .header { position:fixed; width:100%; top:0; height:var(--main-header); font-size: 15px; background-color: black; color: var(--main-header-color); display: flex; align-items: center; }
 .chat_wrap .chat { margin: var(--main-header) 0 var(--main-bottom) 0; overflow-y: auto; height: calc(100% - var(--main-bottom) - var(--main-header)); background-color: var(--main-background-color) }
 /*.chat_wrap .chat.no_show_more { margin: var(--main-header) 0 var(--main-bottom) 0; overflow-y: auto; height: calc(100% - var(--main-bottom) - var(--main-header)); background-color: var(--main-background-color) }*/
 .chat_wrap .chat ul li > div { font-size: 10px;  }
@@ -43,8 +44,8 @@ a { color: var(--main-color) }
 .chat_wrap #threeDotsBtn { position: fixed; color: #FFF; right: 5px; }
 .chat_wrap #threeDotsMenu { position: fixed; top: 10px; right: 25px; }
 .chat_wrap #threeDotsMenu ul li { width: 100px; }
-.chat_wrap #dateList { position: fixed; top: 45%; left: 50%; transform: translate(-50%, -50%); height: 50%; overflow: auto; display: flex; align-items: center; }
-.chat_wrap #dateList ul { color: var(--main-background-color); background-color: var(--main-color); }
+.chat_wrap #dateList { position: fixed; top: 45%; left: 50%; transform: translate(-50%, -50%); height: 30%; overflow: auto; display: flex; align-items: flex-start; border-radius: 0.5em; }
+.chat_wrap #dateList ul { color: var(--main-background-color); background-color: var(--main-color); border-radius: 0.5em; }
 .chat_wrap #dateList ul li { padding: 10px 0; width: 250px; }
 .chat_wrap .list ul { list-style: none; border: 1px solid #ccc; border-radius: 0.5em; background-color: #FFF; font-size: 12px; text-align: center; }
 .chat_wrap .list ul li { border-top: 1px solid #ccc; padding: 5px 0; }

@@ -18,6 +18,8 @@ function Chat() {
     const location = useLocation();
     const messageRef = useRef();
     const roomName = useParams().roomName;
+    const [hideCover, setHideCover] = useState(false);
+    const [removeRefresh, setRemoveRefresh] = useState(false);
     const [themeInfo, setThemeInfo] = useState({});
     const [dataInfo, setDataInfo] = useState(null);
     const [replyTargetInfo, setReplyTargetInfo] = useState(null);
@@ -147,7 +149,7 @@ function Chat() {
 
 // USE_EFFECT & USE_CALLBACK ---------------------------------------
     useEffect(() => {
-        _commonGetCommonInfo("showLog") && console.log("useEffect() -> [roomName]");
+        _commonGetCommonInfo("showLog") && console.log("useEffect() -> [roomName]", roomName);
 
         _databaseGetRoomAuth(roomName, function(roomAuth) {
             _commonGetCommonInfo("showLog") && console.log("  -> _databaseGetRoomAuth callback", Object.keys(roomAuth));
@@ -166,6 +168,7 @@ function Chat() {
             }
         });
 
+        _commonSetCommonInfo("beforeEnterApp", false);
         handleTheme(null, true);
         document.addEventListener("keydown", keyDownFunction);
         window.onfocus = focusFunction;
@@ -176,6 +179,9 @@ function Chat() {
             _commonGetCommonInfo("showLog") && console.log("useEffect() -> [roomName] -> return function");
 
             isMount = false;
+            chatTemp = [];
+            setChatList([]);
+
             document.removeEventListener("keydown", keyDownFunction);
         }
     }, [roomName]);
@@ -183,13 +189,16 @@ function Chat() {
 
     // 현재방의 과거날짜의 대화창에서, 현재 방에서 메시지 오면 changeDate(today)
     useEffect(() => {
-        _commonGetCommonInfo("showLog") && console.log("useEffect() -> [location]", location);
+        _commonGetCommonInfo("showLog") && console.log("useEffect() -> roomName : " + roomName + " // [location]", location);
 
-        // 20230611
-        // TODO : 방에있을때 노티가 와서 누르면 Added 도 불리는데 여기서 changeDate 하면서 History 가 또 불려서 두번 반복 노출됨
-        //        > 룸에서 왔을때는 History를 안부르던가 해야하는데 어케 판단해야할지 모르겠음
+        /**
+           <beforeEnterApp 설정 이유>
+               첫 앱 진입 시(대기실에서만 머무르고 있는 상태에서) NOTI 실행되고 클릭했을 때, ChatAdded와 History가 모두 불려서 채팅이 두번 반복 노출되는 이슈가 있어서
+               완전 첫 진입인지 판단하기위한 설정 -> 노티 클릭을 통한 첫 진입시에는 changeDate부르지 않도록(History 실행되지 않도록)
+        **/
         if(location.state != null && location.state.hasOwnProperty("roomName") &&  location.state.roomName == roomName
-                && _commonGetCommonInfo("chatDate") != _commonGetToday()) {
+                && _commonGetCommonInfo("chatDate") != _commonGetToday()
+                && !location.state.beforeEnterApp) {
             changeDate(null, {date: _commonGetToday()});
         }
     }, [location]);
@@ -204,7 +213,7 @@ function Chat() {
     }, [childAdded]);
 
     useEffect(() => {
-        _commonGetCommonInfo("showLog") && console.log("useEffect() -> [chatList] // length : ", chatList.length);
+        _commonGetCommonInfo("showLog") && console.log("useEffect() -> [chatList] // length : " + chatList.length + " // totalCnt : " + totalCnt);
 
         if(chatList.length > 0 && chatList.length < totalCnt) {
             document.getElementById("showMore").style.display = "block";
@@ -229,21 +238,30 @@ function Chat() {
 
             if(dateList != null) {
 
-                var today = _commonGetToday();
-                _commonSetCommonInfo("chatDate", today);
-                document.getElementById("chatDate").innerText = "["+today+"]";
+                // 삭제하고 오늘날짜 진입
+                if(removeRefresh) {
+                    changeDate(null, {date: _commonGetToday()});
 
-                _commonGetCommonInfo("showLog") && console.log("  -> checkTotalCnt excute");
-                checkTotalCnt(function(totalCnt) {
-                    _commonGetCommonInfo("showLog") && console.log("  -> checkTotalCnt callback // totalCnt : ", totalCnt);
+                // 오늘날짜 처음진입
+                }else {
+                    var today = _commonGetToday();
+                    _commonSetCommonInfo("chatDate", today);
+                    document.getElementById("chatDate").innerText = "["+today+"]";
 
-                    _commonGetCommonInfo("showLog") && console.log("  -> _databaseGetAddedChats excute // pageSize : ", pageSize);
-                    _databaseGetAddedChats(roomName, pageSize, totalCnt, setChatUI)
-                        .then(() => {
-                            //_commonGetCommonInfo("showLog") && console.log("  -> _databaseGetAddedChats return : before callback");
-                        });
+                    _commonGetCommonInfo("showLog") && console.log("  -> checkTotalCnt excute");
+                    checkTotalCnt(function(totalCnt) {
+                        _commonGetCommonInfo("showLog") && console.log("  -> checkTotalCnt callback // totalCnt : ", totalCnt);
 
-                });
+                        _commonGetCommonInfo("showLog") && console.log("  -> _databaseGetAddedChats excute // pageSize : ", pageSize);
+                        _databaseGetAddedChats(roomName, pageSize, totalCnt, setChatUI)
+                            .then(() => {
+                                //_commonGetCommonInfo("showLog") && console.log("  -> _databaseGetAddedChats return : before callback");
+                            });
+
+                    });
+                }
+
+
 
             }
         }
@@ -332,7 +350,7 @@ function Chat() {
         _commonSetCommonInfo("chatDate", date.date);
         document.getElementById("chatDate").innerText = "["+date.date+"]";
 
-
+        _commonGetCommonInfo("showLog") && console.log("  -> checkTotalCnt excute");
         checkTotalCnt(function () {
 
             // 오늘채팅으로 변경했는데 대화내역이없을때
@@ -340,11 +358,17 @@ function Chat() {
                 _commonGetCommonInfo("showLog") && console.log("  -> chatList empty excute");
                 chatTemp = [];
                 setChatList([]);
+
             }else {
                 _commonGetCommonInfo("showLog") && console.log("  -> _databaseGetChatHistory excute // pageSize : ", pageSize);
 
+                // 초기화
+                if(removeRefresh) {
+                    setRemoveRefresh(false);
+                }
+
                 _databaseGetChatHistory(roomName, date.date, null, pageSize, function (dbChatObj, pageFrom) {
-                    _commonGetCommonInfo("showLog") && console.log("  -> _databaseGetChatHistory callback // start");
+                    _commonGetCommonInfo("showLog") && console.log("  -> _databaseGetChatHistory callback // start // dbChatObj : ", dbChatObj);
 
                     setPageFrom(pageFrom);
                     chatTemp = [dbChatObj].concat(chatTemp);
@@ -452,6 +476,7 @@ function Chat() {
             _commonGetCommonInfo("showLog") && console.log("  -> _commonHandleUserTheme callback", userThemeObj.theme);
 
             setThemeInfo(userThemeObj);
+            setHideCover(true);
             scrollToBottom(0, "auto");
             handleShowElement(e, "threeDotsMenu", false);
         })
@@ -473,7 +498,7 @@ function Chat() {
             loadingWithMask(e);
             _databaseRemoveChat(roomName, chatDate, function () {
                 _commonGetCommonInfo("showLog") && console.log("  -> _databaseRemoveChat callback");
-
+                setRemoveRefresh(true);
                 refreshDateList();
                 closeLoadingWithMask(e);
             });
@@ -544,7 +569,7 @@ function Chat() {
         chatTemp = chatList;
 
         _databaseGetChatHistory(roomName, _commonGetCommonInfo("chatDate"), pageFrom, pageSize, function (dbChatObj, from) {
-            _commonGetCommonInfo("showLog") && console.log("  -> _databaseGetChatHistory callback // pageFrom : ", pageFrom);
+            _commonGetCommonInfo("showLog") && console.log("  -> _databaseGetChatHistory callback // pageFrom : " + pageFrom + " // dbChatObj : ", dbChatObj);
 
             setPageFrom(from);
             chatTemp = [dbChatObj].concat(chatTemp);
@@ -690,12 +715,15 @@ function Chat() {
 
     return (
         <div id="chat_wrap" className="chat_wrap" data-theme={themeInfo.theme}>
+            {!hideCover &&
+            <div id="cover"></div>
+            }
             <div className="header">
                 <div id="threeDotsBtn">
-                    <BsThreeDotsVertical onClick={(e)=>{
-                        handleShowElement(e,"threeDotsMenu");
-                        handleShowElement(e,"dateList", false);
-                    }} />
+                    <BsThreeDotsVertical onClick={(e) => {
+                        handleShowElement(e, "threeDotsMenu");
+                        handleShowElement(e, "dateList", false);
+                    }}/>
                 </div>
                 <div className="title">{roomName} <span id="chatDate"></span></div>
             </div>
@@ -714,34 +742,34 @@ function Chat() {
                                          openImageModal={openImageModal}
                                          handleMsgRightClick={handleMsgRightClick}
                                          goToReplyMsg={goToReplyMsg}
-                                         key={index} />
+                                         key={index}/>
                     })}
                 </ul>
-                <div ref={messageRef} />
+                <div ref={messageRef}/>
                 <img id="input-image"
                      className="input-image"
-                     src={src} />
+                     src={src}/>
             </div>
             {replyTargetInfo &&
             <div id="reply-info">
                 {replyTargetInfo}
-                <span className="reply-x" onClick={(e)=>handleMsgLeftClick(e, true)}>X</span>
+                <span className="reply-x" onClick={(e) => handleMsgLeftClick(e, true)}>X</span>
             </div>}
             <div className="input-div" onKeyPress={handleKeyPress}>
-        <textarea
-            id="textarea"
-            className="input-msg"
-            placeholder="Message Here."
-            onChange={handleOnChange}
-            onPaste={handleOnPaste}
-        >
-        </textarea>
+                <textarea
+                    id="textarea"
+                    className="input-msg"
+                    placeholder="Message Here."
+                    onChange={handleOnChange}
+                    onPaste={handleOnPaste}
+                >
+                </textarea>
                 <div id="image_upload">
                     <label htmlFor="file_input">
-                        <img src="file_input.png" />
+                        <img src="file_input.png"/>
                         <span id="fileSpan">FILE</span>
                     </label>
-                    <input id="file_input" type="file" accept="image/*" onChange={handleChangeFile} />
+                    <input id="file_input" type="file" accept="image/*" onChange={handleChangeFile}/>
                 </div>
                 <button
                     className="send"
@@ -752,13 +780,13 @@ function Chat() {
             </div>
 
             {/*threeDotsMenu*/}
-            <div id="threeDotsMenu" className="list" style={{display:"none"}}>
+            <div id="threeDotsMenu" className="list" style={{display: "none"}}>
                 <ul>
                     <li className="date"
                         type="button"
-                        onClick={(e)=>{
-                            handleShowElement(e,"dateList", true);
-                            handleShowElement(e,"threeDotsMenu", false);
+                        onClick={(e) => {
+                            handleShowElement(e, "dateList", true);
+                            handleShowElement(e, "threeDotsMenu", false);
                         }}>
                         DATE
                     </li>
@@ -793,10 +821,10 @@ function Chat() {
             </div>
 
             {/*chat list*/}
-            <div id="dateList" className="list" style={{display:"none"}}>
+            <div id="dateList" className="list" style={{display: "none"}}>
                 <ul>
                     {dateList && dateList.map((date, index) => {
-                        return <li key={index} onClick={(e)=>changeDate(e,{date})}>{date}</li>
+                        return <li key={index} onClick={(e) => changeDate(e, {date})}>{date}</li>
                     })}
                 </ul>
             </div>
@@ -804,14 +832,14 @@ function Chat() {
             {/*loading*/}
             <div id="loadingMask">
                 <div></div>
-                <img id="loadingImg" src={process.env.PUBLIC_URL+"/loader.gif"} />
+                <img id="loadingImg" src={process.env.PUBLIC_URL + "/loader.gif"}/>
             </div>
 
             {/*limage box*/}
             <div id="modal" className="modal" onClick={closeImageModal}>
                 <button onClick={closeImageModal}>&times;</button>
                 <div id="modalBox" className="modalBox">
-                    <img id="modalBoxImg" src="" />
+                    <img id="modalBoxImg" src=""/>
                 </div>
             </div>
 

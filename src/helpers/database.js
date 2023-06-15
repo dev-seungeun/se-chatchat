@@ -145,9 +145,11 @@ export function _databaseGetChatTime(roomName, callback) {
     // date만 바뀌면 여기서 date만 리턴됨 > lastChat 전체 조회 후 callback
     const url = "chats/rooms/"+roomName+"/lastChat";
     dbOnChildChanged(getRef(url), (snapshot) => {
-        dbGet( dbChild ( dbRef(database), "chats/rooms/"+roomName+"/lastChat" ) ).then((snapshot) => {
-            callback(snapshot.val());
-        });
+        if(snapshot.key == "date") {
+            dbGet( dbChild ( dbRef(database), "chats/rooms/"+roomName+"/lastChat" ) ).then((snapshot) => {
+                callback(snapshot.val());
+            });
+        }
     });
 }
 
