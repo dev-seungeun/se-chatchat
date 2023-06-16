@@ -29,7 +29,6 @@ function Chat() {
     const [imgFile, setImgFile] = useState();
     const [isOwner, setIsOwner] = useState(false);
     const [dateList, setDateList] = useState([]);
-    const [emptyToday, setEmptyToday] = useState(false);
     const [childAdded, setChildAdded] = useState([]);
     const [pageFrom, setPageFrom] = useState(null);
     const [totalCnt, setTotalCnt] = useState(null);
@@ -327,15 +326,14 @@ function Chat() {
     };
 
     const changeDate = (e, date) => {
-        _commonGetCommonInfo("showLog") && console.log("changeDate()", "date : " + date.date + " / chatDate : " + _commonGetCommonInfo("chatDate"));
+        _commonGetCommonInfo("showLog") && console.log("changeDate()", "date(TO) : " + date.date + " / chatDate(FROM) : " + _commonGetCommonInfo("chatDate"));
 
         handleShowElement(e, "dateList", false);
         if(date.date == _commonGetCommonInfo("chatDate")) {
             return;
         }
 
-        var tempIsTodayChat = date.date == _commonGetToday();
-        if(!tempIsTodayChat) {
+        if(date.date != _commonGetToday()) {
             document.getElementById("textarea").disabled = true;
             document.getElementById("file_input").disabled = true;
             document.getElementById("textarea").style.cursor = "not-allowed";
@@ -353,29 +351,27 @@ function Chat() {
         _commonGetCommonInfo("showLog") && console.log("  -> checkTotalCnt excute");
         checkTotalCnt(function () {
 
-            // 오늘채팅으로 변경했는데 대화내역이없을때
-            if((tempIsTodayChat && emptyToday)) {
-                _commonGetCommonInfo("showLog") && console.log("  -> chatList empty excute");
-                chatTemp = [];
-                setChatList([]);
+            _commonGetCommonInfo("showLog") && console.log("  -> _databaseGetChatHistory excute // pageSize : ", pageSize);
 
-            }else {
-                _commonGetCommonInfo("showLog") && console.log("  -> _databaseGetChatHistory excute // pageSize : ", pageSize);
+            // 초기화
+            if(removeRefresh) {
+                setRemoveRefresh(false);
+            }
 
-                // 초기화
-                if(removeRefresh) {
-                    setRemoveRefresh(false);
-                }
+            _databaseGetChatHistory(roomName, date.date, null, pageSize, function (dbChatObj, pageFrom) {
+                _commonGetCommonInfo("showLog") && console.log("  -> _databaseGetChatHistory callback // start // dbChatObj : ", dbChatObj);
 
-                _databaseGetChatHistory(roomName, date.date, null, pageSize, function (dbChatObj, pageFrom) {
-                    _commonGetCommonInfo("showLog") && console.log("  -> _databaseGetChatHistory callback // start // dbChatObj : ", dbChatObj);
-
+                // 오늘날짜로 변경했는데 대화내용이 없을경우 undefined 반환됨
+                if(dbChatObj == undefined) {
+                    chatTemp = [];
+                    setChatList([]);
+                }else {
                     setPageFrom(pageFrom);
                     chatTemp = [dbChatObj].concat(chatTemp);
                     setChatList(chatTemp);
                     scrollToBottom(0, "auto");
-                });
-            }
+                }
+            });
 
         });
 
@@ -600,12 +596,11 @@ function Chat() {
         _commonGetCommonInfo("showLog") && console.log("refreshDateList()");
 
         _databaseGetChatDayList(roomName, function(dateList) {
-            _commonGetCommonInfo("showLog") && console.log("  -> _databaseGetChatDayList callback");
+            _commonGetCommonInfo("showLog") && console.log("  -> _databaseGetChatDayList callback [dateList]", dateList);
 
             dateList = dateList == null ? [] :  Object.keys(dateList);
             var today = _commonGetToday();
             if(!dateList.includes(today)) {
-                setEmptyToday(true);
                 dateList.push(today);
             }
             setDateList(dateList);

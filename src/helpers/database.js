@@ -79,19 +79,24 @@ export function _databaseGetChatHistory(roomName, stdDate, pageFrom, pageSize, c
 
     getPaging(url, pageFrom, pageSize).then((snapshot) => {
 
-        var arr = Object.keys(snapshot.val());
-        var firstKey = arr[0];
+        // 오늘날짜로 변경했는데 대화내용이 없을경우 null 반환됨
+        if(snapshot.val() == null) {
+            callback();
+        }else {
+            var arr = Object.keys(snapshot.val());
+            var firstKey = arr[0];
 
-        var arr = Object.keys(snapshot.val());
-        if(arr.length >= pageSize) {
-            arr.shift();
+            var arr = Object.keys(snapshot.val());
+            if(arr.length >= pageSize) {
+                arr.shift();
+            }
+
+            // 마지막 대화쪽을 가져오기위해
+            var reverseArr = arr.reverse();
+            reverseArr.forEach((sendTime) => {
+                callback(snapshot.val()[sendTime], String(firstKey));
+            });
         }
-
-        // 마지막 대화쪽을 가져오기위해
-        var reverseArr = arr.reverse();
-        reverseArr.forEach((sendTime) => {
-            callback(snapshot.val()[sendTime], String(firstKey));
-        });
 
     });
 }
