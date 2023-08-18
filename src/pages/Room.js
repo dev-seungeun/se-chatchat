@@ -102,7 +102,6 @@ function Room() {
         if(!_commonGetCommonInfo("cryptoInfo")) {
             _databaseGetCryptoInfo(function(cryptoInfo) {
                 _commonSetCommonInfo("cryptoInfo", cryptoInfo);
-                console.log("set crypto")
             });
         }
 
