@@ -24,6 +24,12 @@ export function getPaging(url, from, listSize) {
     }
 }
 
+export function _databaseGetCryptoInfo(callback) {
+    get("crypto/secret").then((snapshot) => {
+        callback(snapshot.val());
+    });
+}
+
 export function _databaseGetRoomList(callback) {
     const url = "chats/rooms";
 

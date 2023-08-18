@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { _commonGetCommonInfo, _commonSetCommonInfo, _commonHandleUserTheme, _commonGetToday } from "../helpers/common";
+import { _encrypt, _decrypt } from "../helpers/crypto";
 import { _authLogout, _authGetCurrentUser } from "../helpers/auth";
 import { _storageSendImg, _storageDownloadImg } from "../helpers/storage";
 import { _databaseGetRoomAuth,  _databaseUpdateUserProfile, _databaseGetChatDayList, _databaseSendChat, _databaseUpdateChatTime, _databaseGetChatHistory, _databaseGetAddedChats, _databaseGetTotalCnt, _databaseRemoveChat, _databaseSaveChat } from "../helpers/database";
@@ -34,6 +35,7 @@ function Chat() {
     const [totalCnt, setTotalCnt] = useState(null);
 
     const setChatUI = (dbChatObj, pageFrom, isInit) => {
+        dbChatObj.message = _decrypt(dbChatObj.message)
         if(isMount) {
             if(isInit) {
                 setPageFrom(pageFrom);
@@ -69,7 +71,7 @@ function Chat() {
                 {
                     uid: _authGetCurrentUser().uid,
                     email: _authGetCurrentUser().email,
-                    message: message,
+                    message: _encrypt(message),
                     imgUrl: imgUrl,
                     timestamp: Date.now(),
                     reply: dataInfo ? dataInfo : null
@@ -367,6 +369,7 @@ function Chat() {
                     setChatList([]);
                 }else {
                     setPageFrom(pageFrom);
+                    dbChatObj.message = _decrypt(dbChatObj.message)
                     chatTemp = [dbChatObj].concat(chatTemp);
                     setChatList(chatTemp);
                     scrollToBottom(0, "auto");
@@ -568,6 +571,7 @@ function Chat() {
             _commonGetCommonInfo("showLog") && console.log("  -> _databaseGetChatHistory callback // pageFrom : " + pageFrom + " // dbChatObj : ", dbChatObj);
 
             setPageFrom(from);
+            dbChatObj.message = _decrypt(dbChatObj.message)
             chatTemp = [dbChatObj].concat(chatTemp);
             setChatList(chatTemp);
         });

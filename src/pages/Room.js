@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {_commonGetCommonInfo, _commonGetToday, _commonSetCommonInfo } from "../helpers/common";
-import { _databaseGetRoomList, _databaseGetChatTime } from "../helpers/database";
+import {_databaseGetRoomList, _databaseGetChatTime, _databaseGetCryptoInfo} from "../helpers/database";
 import { _authLogout, _authGetCurrentUser } from "../helpers/auth";
 import { _sendNotification} from "../helpers/useNotification";
 import "../style/rooms.css"
@@ -41,6 +41,7 @@ function Room() {
                 _commonSetCommonInfo("roomList", roomNameList);
 
                 drawRoomList(roomNameList);
+
             });
         }
 
@@ -97,6 +98,14 @@ function Room() {
 
         getRoomList();
         _commonSetCommonInfo("selectedRoom", "");
+
+        if(!_commonGetCommonInfo("cryptoInfo")) {
+            _databaseGetCryptoInfo(function(cryptoInfo) {
+                _commonSetCommonInfo("cryptoInfo", cryptoInfo);
+                console.log("set crypto")
+            });
+        }
+
         isMount = true;
 
         return() => {
