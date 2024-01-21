@@ -335,7 +335,7 @@ function Chat() {
             return;
         }
 
-        if(date.date != _commonGetToday()) {
+        if(date.date < _commonGetToday()) {
             document.getElementById("textarea").disabled = true;
             document.getElementById("file_input").disabled = true;
             document.getElementById("textarea").style.cursor = "not-allowed";
